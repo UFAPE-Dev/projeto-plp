@@ -30,7 +30,7 @@ function migrate() {
                   status TEXT,
                   bloco TEXT NOT NULL,
                   concluida_em TEXT NOT NULL,
-                  id_categoria TEXT NOT NULL,
+                  id_categoria INTEGER NOT NULL,
                   FOREIGN KEY (id_categoria) REFERENCES categoria (id)
                 );
             `)
@@ -44,7 +44,7 @@ function migrate() {
               tipo TEXT NOT NULL,
               status TEXT,
               concluida_em TEXT NOT NULL,
-              id_categoria TEXT NOT NULL,
+              id_categoria INTEGER NOT NULL,
               FOREIGN KEY (id_categoria) REFERENCES categoria (id)
             );
         `)
@@ -127,6 +127,13 @@ async function seed() {
         console.log(lembrete)
     }
     console.log(lembretes)
+
+
+    console.log(categorias[0])
+    console.log(tarefas[0])
+    console.log(metas[0])
+    console.log(lembretes[0])
+
     console.log("SEEDED!")
     console.log("Criados: " + categorias.length + " categorias")
     console.log("Criados: " + tarefas.length + " tarefas")

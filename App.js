@@ -9,7 +9,8 @@ export default function App() {
   useEffect( () => {
     async function initTables () {
       await migrate()
-      if(await allTarefas().length === 0) {
+      let tarefas = await allTarefas()
+      if(tarefas.length === 0) {
         await seed()
       }
     }
