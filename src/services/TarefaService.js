@@ -14,8 +14,6 @@ async function allTarefas (){
         })
     })
 
-    console.log(result)
-
     return result.map((element) => {
         return new Tarefa(element)
     })
