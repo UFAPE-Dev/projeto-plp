@@ -2,6 +2,7 @@ import {createStackNavigator} from "@react-navigation/stack";
 import React from "react";
 import BottomTabNavigator from './BottomTabNavigator'
 import CriarMeta from "../screens/CriarMeta";
+import CriarTarefa from "../screens/CriarTarefa";
 
 export default function StackInicioNavigator() {
     const {Navigator, Screen} = createStackNavigator();
@@ -19,8 +20,8 @@ export default function StackInicioNavigator() {
                 component={CriarMeta}
             />
             <Screen
-                name={'Nova atividade'}
-                component={CriarMeta}
+                name={'Nova Tarefa'}
+                component={CriarTarefa}
             />
         </Navigator>
     );

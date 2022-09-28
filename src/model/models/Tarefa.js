@@ -1,5 +1,5 @@
 export default class Tarefa {
-    constructor({id, id_categoria, titulo, descricao, data_inicio, data_fim, status, bloco, concluida_em}) {
+    constructor({id, id_categoria, titulo, descricao, data_inicio, data_fim, status = null, bloco, concluida_em = null}) {
         this.id = id
         this.id_categoria = id_categoria
         this.titulo = titulo
