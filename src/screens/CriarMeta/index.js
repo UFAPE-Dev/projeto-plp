@@ -13,12 +13,12 @@ import exibirToast from "../../util/toastAndroid";
 import Button from "../../components/Button";
 import {useNavigation} from "@react-navigation/native";
 import Modal from "../../components/Modal";
-import {ColorPicker} from 'react-native-color-picker'
+import {ColorPicker, fromHsv} from 'react-native-color-picker'
 import Categoria from "../../model/models/Categoria";
 
 export default function CriarMeta() {
     const [geralInfo, setGeralInfo] = useState({data: new Date(), id_categoria: 1});
-    const [categoriaInfo, setCategoriaInfo] = useState({nome: "", cor: ""});
+    const [categoriaInfo, setCategoriaInfo] = useState({nome: "", cor: "#ff0000"});
     const [showPicker, setShowPicker] = useState(false)
     const [categorias, setCategorias] = useState([])
     const navigate = useNavigation().navigate
@@ -51,6 +51,9 @@ export default function CriarMeta() {
 
     function handleGeralCategoriaInput(name) {
         return (value) => {
+            if(name === "cor") {
+                value = fromHsv(value)
+            }
             setCategoriaInfo((oldGeralInfo) => ({...oldGeralInfo, [name]: value}));
         };
     }
@@ -125,6 +128,7 @@ export default function CriarMeta() {
                     <View style={{flex: 1}}>
                         <ColorPicker
                             onColorSelected={handleGeralCategoriaInput("cor")}
+                            onColorChange={handleGeralCategoriaInput("cor")}
                             defaultColor={categoriaInfo.cor}
                             style={{flex: 1}}
                         />

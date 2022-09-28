@@ -5,22 +5,20 @@ import Input from "../../components/Input";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker';
 import {allCategorias, createCategoria} from "../../services/CategoriaService";
-import {formatDate, formatDateDay, formatTime} from "../../util/dateFormat";
-import Meta from "../../model/models/Meta";
-import {createMeta} from "../../services/MetaService";
+import {formatDate, formatTime} from "../../util/dateFormat";
 import exibirToast from "../../util/toastAndroid";
 import Button from "../../components/Button";
 import {useNavigation} from "@react-navigation/native";
 import Modal from "../../components/Modal";
-import {ColorPicker} from 'react-native-color-picker'
+import {ColorPicker, fromHsv} from 'react-native-color-picker'
 import Categoria from "../../model/models/Categoria";
 import {MANHA, MEIAHORA, NOITE, TARDE, UMAHORA} from "../../model/enums/Bloco";
 import Tarefa from "../../model/models/Tarefa";
 import {createTarefa} from "../../services/TarefaService";
 
 export default function CriarTarefa() {
-    const [geralInfo, setGeralInfo] = useState({data_inicio: new Date(), id_categoria: null, data_fim: null});
-    const [categoriaInfo, setCategoriaInfo] = useState({nome: "", cor: ""});
+    const [geralInfo, setGeralInfo] = useState({data_inicio: new Date(), id_categoria: 1, data_fim: null, bloco: MANHA});
+    const [categoriaInfo, setCategoriaInfo] = useState({nome: "", cor: "#ff0000"});
     const [showPicker, setShowPicker] = useState(false)
     const [categorias, setCategorias] = useState([])
     const navigate = useNavigation().navigate
@@ -51,13 +49,15 @@ export default function CriarTarefa() {
 
     useEffect(() => {
         initData()
+        onChange(new Date(), new Date())
     }, [])
 
     function validations() {
-        return geralInfo.id_categoria && geralInfo.data && geralInfo.tipo && geralInfo.titulo && geralInfo.descricao
+        return geralInfo.id_categoria && geralInfo.data_inicio && geralInfo.bloco && geralInfo.titulo && geralInfo.descricao && geralInfo.data_fim
     }
 
     function validationsCategoria() {
+        console.log(categoriaInfo)
         return categoriaInfo.nome && categoriaInfo.cor
     }
 
@@ -69,15 +69,20 @@ export default function CriarTarefa() {
 
     function handleGeralCategoriaInput(name) {
         return (value) => {
+            if(name === "cor") {
+                value = fromHsv(value)
+            }
             setCategoriaInfo((oldGeralInfo) => ({...oldGeralInfo, [name]: value}));
         };
     }
 
     const onChange = (event, selectedDate) => {
         if (!selectedDate) {
-            setGeralInfo((oldGeralInfo) => ({...oldGeralInfo, data_inicio: geralInfo.data_fim}));
+            treatStartDate(selectedDate)
+            setGeralInfo((oldGeralInfo) => ({...oldGeralInfo, data_inicio: geralInfo.data_inicio}));
             treatEndDate(geralInfo.data_inicio)
         } else {
+            selectedDate = treatStartDate(selectedDate)
             setGeralInfo((oldGeralInfo) => ({...oldGeralInfo, data_inicio: selectedDate}));
             treatEndDate(selectedDate)
         }
@@ -126,31 +131,33 @@ export default function CriarTarefa() {
     }
 
     function treatStartDate(date) {
+        let holdDate = new Date(date.toISOString())
         switch (geralInfo.bloco) {
             case MANHA:
-                data.setHours(6)
-                data.setMinutes(0)
-                data.setSeconds(0)
+                holdDate.setHours(6)
+                holdDate.setMinutes(0)
+                holdDate.setSeconds(0)
                 break;
             case TARDE:
-                data.setHours(12)
-                data.setMinutes(0)
-                data.setSeconds(0)
+                holdDate.setHours(12)
+                holdDate.setMinutes(0)
+                holdDate.setSeconds(0)
                 break;
             case NOITE:
-                data.setHours(18)
-                data.setMinutes(0)
-                data.setSeconds(0)
+                holdDate.setHours(18)
+                holdDate.setMinutes(0)
+                holdDate.setSeconds(0)
                 break;
             default:
                 break;
 
         }
-        return data
+        return holdDate
     }
 
-    function treatEndDate(dataFim){
-        switch (geralInfo.bloco) {
+    function treatEndDate(data, bloco){
+        let dataFim = new Date(data)
+        switch (bloco ?? geralInfo.bloco) {
             case MANHA:
                 dataFim.setHours(12)
                 dataFim.setMinutes(0)
@@ -176,6 +183,11 @@ export default function CriarTarefa() {
         setGeralInfo((oldGeralInfo) => ({...oldGeralInfo, data_fim: dataFim}));
     }
 
+    function handleBlocoChange(bloco){
+        setGeralInfo((oldGeralInfo) => ({...oldGeralInfo, bloco: bloco}));
+        treatEndDate(geralInfo.data_inicio, bloco)
+    }
+
     return (
         <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, padding: '3%', width: '100%', maxHeight: "85%"}}>
             {showPicker && (
@@ -197,6 +209,7 @@ export default function CriarTarefa() {
                     </View>
                     <View style={{flex: 1}}>
                         <ColorPicker
+                            onColorChange={handleGeralCategoriaInput("cor")}
                             onColorSelected={handleGeralCategoriaInput("cor")}
                             defaultColor={categoriaInfo.cor}
                             style={{flex: 1}}
@@ -243,7 +256,7 @@ export default function CriarTarefa() {
                             <Text>Bloco</Text>
                             <Picker
                                 selectedValue={geralInfo.bloco}
-                                onValueChange={handleGeralInput("bloco")}>
+                                onValueChange={handleBlocoChange}>
                                 {renderBlocosList()}
                             </Picker>
                         </View>
