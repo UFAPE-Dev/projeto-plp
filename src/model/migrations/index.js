@@ -29,7 +29,7 @@ function migrate() {
                   data_fim TEXT NOT NULL,
                   status TEXT,
                   bloco TEXT NOT NULL,
-                  concluida_em TEXT NOT NULL,
+                  concluida_em TEXT,
                   id_categoria INTEGER NOT NULL,
                   FOREIGN KEY (id_categoria) REFERENCES categoria (id)
                 );
@@ -43,7 +43,7 @@ function migrate() {
               data TEXT NOT NULL,
               tipo TEXT NOT NULL,
               status TEXT,
-              concluida_em TEXT NOT NULL,
+              concluida_em TEXT,
               id_categoria INTEGER NOT NULL,
               FOREIGN KEY (id_categoria) REFERENCES categoria (id)
             );
@@ -55,7 +55,7 @@ function migrate() {
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               descricao TEXT NOT NULL,
               data TEXT NOT NULL,
-              concluida_em TEXT NOT NULL
+              concluida_em TEXT
             );
         `)
     })
@@ -86,15 +86,18 @@ async function seed() {
     }
     console.log(categorias)
 
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
+        let start = randomDate()
+        let end = randomDate(new Date(start))
+        let data_concluida = randomDate(new Date(start), new Date(end))
         let tarefa = await createTarefa({
             titulo: 'Tarefa ' + i,
             descricao: 'Descrição ' + i,
-            data_inicio: randomDate(),
-            data_fim: randomDate(),
+            data_inicio: start,
+            data_fim: end,
             status: getRandomStatus(),
             bloco: getRandomBloco(),
-            concluida_em: randomDate(),
+            concluida_em: getRandomBoolean() ? data_concluida : null,
             id_categoria: categorias[getRandomInt(0, categorias.length)].id
         })
         tarefas.push(tarefa)
@@ -102,14 +105,16 @@ async function seed() {
     }
     console.log(tarefas)
 
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
+        let data = randomDate()
+        let data_concluida = randomDate(new Date(data))
         let meta = await createMeta({
             titulo: 'Meta ' + i,
             descricao: 'Descrição ' + i,
-            data: randomDate(),
+            data: data,
             tipo: getRandomTipo(),
             status: getRandomStatus(),
-            concluida_em: randomDate(),
+            concluida_em: getRandomBoolean() ? data_concluida : null,
             id_categoria: categorias[getRandomInt(0, categorias.length)].id
         })
         metas.push(meta)
@@ -117,7 +122,7 @@ async function seed() {
     }
     console.log(metas)
 
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
         let lembrete = await createLembrete({
             descricao: 'Lembrete ' + i,
             data: randomDate(),
@@ -128,12 +133,6 @@ async function seed() {
     }
     console.log(lembretes)
 
-
-    console.log(categorias[0])
-    console.log(tarefas[0])
-    console.log(metas[0])
-    console.log(lembretes[0])
-
     console.log("SEEDED!")
     console.log("Criados: " + categorias.length + " categorias")
     console.log("Criados: " + tarefas.length + " tarefas")
@@ -142,7 +141,7 @@ async function seed() {
 
 }
 
-function randomDate(start = new Date(2022, 0, 1), end = new Date(2022, 11, 1)) {
+function randomDate(start = new Date(2022, 0, 1), end = new Date(2023, 11, 1)) {
     let random_date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
     return random_date.toISOString()
 }
@@ -211,6 +210,11 @@ function getRandomBloco() {
             break
     }
     return bloco
+}
+
+//create a function to get a random boolean
+function getRandomBoolean() {
+    return Math.random() >= 0.5;
 }
 
 export {
