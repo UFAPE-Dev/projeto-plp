@@ -38,6 +38,8 @@ async function createMeta({id_categoria, titulo, descricao, data, tipo, status, 
         })
     })
 
+    console.log(result)
+
     return findMeta(result)
 }
 
