@@ -5,27 +5,33 @@ import Input from "../../components/Input";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker';
 import {ANUAL, MENSAL, SEMANAL} from "../../model/enums/Tipo";
-import {allCategorias} from "../../services/CategoriaService";
+import {allCategorias, createCategoria} from "../../services/CategoriaService";
 import {formatDate} from "../../util/dateFormat";
 import Meta from "../../model/models/Meta";
 import {createMeta} from "../../services/MetaService";
 import exibirToast from "../../util/toastAndroid";
 import Button from "../../components/Button";
 import {useNavigation} from "@react-navigation/native";
+import Modal from "../../components/Modal";
+import {ColorPicker} from 'react-native-color-picker'
+import Categoria from "../../model/models/Categoria";
 
 export default function CriarMeta() {
     const [geralInfo, setGeralInfo] = useState({data: new Date(), id_categoria: 1});
+    const [categoriaInfo, setCategoriaInfo] = useState({nome: "", cor: ""});
     const [showPicker, setShowPicker] = useState(false)
     const [categorias, setCategorias] = useState([])
     const navigate = useNavigation().navigate
+    const [modalVisible, setModalVisible] = useState(false)
+
+
+    async function initData() {
+        let categorias = await allCategorias()
+        console.log(categorias)
+        setCategorias(categorias)
+    }
 
     useEffect(() => {
-        async function initData() {
-            let categorias = await allCategorias()
-            console.log(categorias)
-            setCategorias(categorias)
-        }
-
         initData()
     }, [])
 
@@ -33,9 +39,19 @@ export default function CriarMeta() {
         return geralInfo.id_categoria && geralInfo.data && geralInfo.tipo && geralInfo.titulo && geralInfo.descricao
     }
 
+    function validationsCategoria() {
+        return categoriaInfo.nome && categoriaInfo.cor
+    }
+
     function handleGeralInput(name) {
         return (value) => {
             setGeralInfo((oldGeralInfo) => ({...oldGeralInfo, [name]: value}));
+        };
+    }
+
+    function handleGeralCategoriaInput(name) {
+        return (value) => {
+            setCategoriaInfo((oldGeralInfo) => ({...oldGeralInfo, [name]: value}));
         };
     }
 
@@ -75,6 +91,18 @@ export default function CriarMeta() {
         }
     }
 
+    async function salvarCategoria() {
+        if (validationsCategoria()) {
+            let categoria = new Categoria(categoriaInfo)
+            categoria = await createCategoria(categoria)
+            exibirToast('Categoria criada com sucesso!')
+            await initData()
+            setModalVisible(false)
+        }else{
+            exibirToast("Preencha todos os campos")
+        }
+    }
+
     return (
         <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, padding: '3%', width: '100%', maxHeight: "65%"}}>
             {showPicker && (
@@ -85,6 +113,27 @@ export default function CriarMeta() {
                     onChange={(event, date) => onChange(event, date, null)}
                 />
             )}
+            <Modal title={"Criar nova categoria"} visible={modalVisible} modalToggle={() => setModalVisible(!modalVisible)}>
+                <View style={{padding: "3%", flex: 1, flexDirection: 'row', alignItems: "center"}}>
+                    <View style={{flex:1, alignItems: 'center'}}>
+                        <Input
+                            defaultValue={categoriaInfo.nome}
+                            onChangeText ={handleGeralCategoriaInput("nome")}
+                            title={"nome"}
+                        />
+                    </View>
+                    <View style={{flex: 1}}>
+                        <ColorPicker
+                            onColorSelected={handleGeralCategoriaInput("cor")}
+                            defaultColor={categoriaInfo.cor}
+                            style={{flex: 1}}
+                        />
+                    </View>
+                </View>
+                <Button color={"red"} onPress={salvarCategoria}>
+                    <Text style={{color: 'white'}}>Salvar</Text>
+                </Button>
+            </Modal>
             <Card
                 title={"Criar nova meta"}
                 contentStyle={{padding: '3%', justifyContent: "flex-start"}}>
@@ -111,6 +160,9 @@ export default function CriarMeta() {
                                 {renderCategoriaList()}
                             </Picker>
                         </View>
+                        <Button onPress={() => setModalVisible(true)} color={"blue"}>
+                            <Text style={{color: "white"}}>Criar nova categoria</Text>
+                        </Button>
                     </View>
 
                     <View style={{flex: 1, flexDirection: "row"}}>
