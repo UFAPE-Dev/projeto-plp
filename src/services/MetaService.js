@@ -1,5 +1,6 @@
 import db from "../model/database/SQLiteDatabase";
 import Meta from "../model/models/Meta";
+import {findCategoria} from "./CategoriaService";
 
 async function allMetas (){
     const result = await new Promise((resolve, reject) => {
@@ -14,9 +15,17 @@ async function allMetas (){
         })
     })
 
-    return result.map((element) => {
-        return new Meta(element)
-    })
+    let mappedResult = []
+
+    for (const element of result) {
+        let meta = new Meta(element)
+        meta.data = meta.data ? new Date(meta.data) : null
+        meta.concluida_em = meta.concluida_em ? new Date(meta.concluida_em) : null
+        meta.categoria = await findCategoria(meta.id_categoria)
+        mappedResult.push(meta)
+    }
+
+    return mappedResult
 }
 
 
@@ -59,7 +68,7 @@ async function findMeta(id) {
     return new Meta(result)
 }
 
-async function deleteMeta({id}) {
+async function deleteMeta(id) {
     return new Promise((resolve, reject) => {
         db.transaction((tx) => {
             tx.executeSql(
