@@ -14,17 +14,42 @@ import {ColorPicker, fromHsv} from 'react-native-color-picker'
 import Categoria from "../../model/models/Categoria";
 import {MANHA, MEIAHORA, NOITE, TARDE, UMAHORA} from "../../model/enums/Bloco";
 import Tarefa from "../../model/models/Tarefa";
-import {createTarefa} from "../../services/TarefaService";
+import {
+    createTarefa,
+    deleteTarefa,
+    concluirTarefa,
+    concluirTarefaParcialmente,
+    updateTarefa
+} from "../../services/TarefaService";
+import {CONCLUIDA, PARCIAL} from "../../model/enums/Status";
 
-export default function CriarTarefa() {
-    const [geralInfo, setGeralInfo] = useState({data_inicio: new Date(), id_categoria: 1, data_fim: null, bloco: MANHA});
+function getTarefa(tarefa){
+    let data_inicio = tarefa.data_fim ? new Date(tarefa.data_inicio) : null;
+    let concluida_em = tarefa.concluida_em ? new Date(tarefa.concluida_em) : null;
+    return {...tarefa, data_inicio: data_inicio, data_fim: null, concluida_em: concluida_em}
+}
+
+export default function CriarTarefa({route}) {
+    const tarefa = route.params ? getTarefa(route.params.tarefa): null
+    const tarefa_id = tarefa?.id
+    const [geralInfo, setGeralInfo] = useState( {
+        ...{
+            data_inicio: new Date(),
+            id_categoria: 1,
+            data_fim: null,
+            bloco: MANHA
+        },
+        ...tarefa
+    });
     const [categoriaInfo, setCategoriaInfo] = useState({nome: "", cor: "#ff0000"});
     const [showPicker, setShowPicker] = useState(false)
     const [categorias, setCategorias] = useState([])
-    const navigate = useNavigation().navigate
+    const goBack = useNavigation().goBack
     const [modalVisible, setModalVisible] = useState(false)
 
     const [mode, setMode] = useState('date');
+
+    console.log(geralInfo)
 
 
     // Muda setShow para true o que faz com que DateTimePicker apareça na tela.
@@ -49,7 +74,7 @@ export default function CriarTarefa() {
 
     useEffect(() => {
         initData()
-        onChange(new Date(), new Date())
+        onChange(new Date(), tarefa?.data_inicio ?? new Date() )
     }, [])
 
     function validations() {
@@ -105,17 +130,32 @@ export default function CriarTarefa() {
     }
 
     async function criarTarefa() {
-        if (validations()) {
-            let tarefa = new Tarefa(geralInfo)
-            tarefa.data_inicio = tarefa.data_inicio.toISOString()
-            tarefa.data_fim = tarefa.data_fim.toISOString()
-            tarefa = await createTarefa(tarefa)
-            exibirToast('Tarefa criada com sucesso!')
-            console.log(tarefa)
-            navigate('Metas')
+        if(tarefa){
+            if(validations()) {
+                let tarefa = new Tarefa(geralInfo)
+                tarefa.id = tarefa_id
+                tarefa.data_inicio = tarefa.data_inicio.toISOString()
+                tarefa.data_fim = tarefa.data_fim.toISOString()
+                await updateTarefa(tarefa)
+                exibirToast('Tarefa atualizada com sucesso!')
+                goBack()
+            }else{
+                exibirToast("Preencha todos os campos")
+            }
         }else{
-            exibirToast("Preencha todos os campos")
+            if (validations()) {
+                let tarefa = new Tarefa(geralInfo)
+                tarefa.data_inicio = tarefa.data_inicio.toISOString()
+                tarefa.data_fim = tarefa.data_fim.toISOString()
+                tarefa = await createTarefa(tarefa)
+                exibirToast('Tarefa criada com sucesso!')
+                console.log(tarefa)
+                goBack()
+            }else{
+                exibirToast("Preencha todos os campos")
+            }
         }
+
     }
 
     async function salvarCategoria() {
@@ -186,6 +226,27 @@ export default function CriarTarefa() {
     function handleBlocoChange(bloco){
         setGeralInfo((oldGeralInfo) => ({...oldGeralInfo, bloco: bloco}));
         treatEndDate(geralInfo.data_inicio, bloco)
+    }
+
+    async function excluiTarefa(){
+        await deleteTarefa(tarefa.id)
+        exibirToast('Tarefa excluída com sucesso!')
+        goBack()
+    }
+
+    async function concluirTarefaParcialmenteHold(){
+        console.log(tarefa.id)
+        await concluirTarefaParcialmente({id: tarefa.id, status: PARCIAL})
+        exibirToast('Tarefa concluída parcialmente com sucesso!')
+        goBack()
+    }
+
+    async function concluirTarefaHold(){
+        console.log(tarefa_id)
+        let tarefa = await concluirTarefa({id: tarefa_id, status: CONCLUIDA, concluida_em: new Date().toISOString()})
+        console.log(tarefa)
+        exibirToast('Tarefa concluída com sucesso!')
+        goBack()
     }
 
     return (
@@ -292,9 +353,24 @@ export default function CriarTarefa() {
                 </ScrollView>
             </Card>
             <View>
-                <Button color={'red'} onPress={criarTarefa}>
-                    <Text style={{color: 'white'}}>Criar Tarefa</Text>
+                <Button color={'purple'} onPress={criarTarefa}>
+                    <Text style={{color: 'white'}}>Salvar Tarefa</Text>
                 </Button>
+                {
+                    tarefa && (
+                        <>
+                            <Button color={'orange'} onPress={concluirTarefaParcialmenteHold}>
+                                <Text style={{color: 'white'}}>Concluir tarefa parcialmente</Text>
+                            </Button>
+                            <Button color={'green'} onPress={concluirTarefaHold}>
+                                <Text style={{color: 'white'}}>Concluir Tarefa</Text>
+                            </Button>
+                            <Button color={'red'} onPress={excluiTarefa}>
+                                <Text style={{color: 'white'}}>Excluir Tarefa</Text>
+                            </Button>
+                        </>
+                    )
+                }
             </View>
         </View>
     );
