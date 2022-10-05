@@ -1,40 +1,6 @@
 import db from "../model/database/SQLiteDatabase";
 
-const quantidade_metas_concluidas_banco = async (firstDAte, endDate) => {
-    return new Promise((resolve, reject) => {
-        db.transaction(tx => {
-            tx.executeSql(
-                `
-                    SELECT COUNT(*) AS quantidade FROM meta WHERE status = "Concluída";
-                    `,
-                [firstDAte, endDate],
-                (_, {rows}) => resolve(rows._array[0].quantidade),
-                (_, error) => {
-                    reject(error)
-                }
-            )
-        })
-    });
-}
-
-const quantidade_metas_totais_banco = async (firstDAte, endDate) => {
-    return new Promise((resolve, reject) => {
-        db.transaction(tx => {
-            tx.executeSql(
-                `
-                    SELECT COUNT(*) AS quantidade FROM meta;
-                    `,
-                [firstDAte, endDate],
-                (_, {rows}) => resolve(rows._array[0].quantidade),
-                (_, error) => {
-                    reject(error)
-                }
-            )
-        })
-    });
-}
-
-const quantidade_metas_concluidas = async (firstDAte, endDate) => {
+const quantidadeMetasConcluidasAno = async (firstDAte, endDate) => {
     return new Promise((resolve, reject) => {
         db.transaction(tx => {
             tx.executeSql(
@@ -51,7 +17,7 @@ const quantidade_metas_concluidas = async (firstDAte, endDate) => {
     });
 }
 
-const quantidade_metas_totais = async (firstDAte, endDate) => {
+const quantidadeMetasAno = async (firstDAte, endDate) => {
     return new Promise((resolve, reject) => {
         db.transaction(tx => {
             tx.executeSql(
@@ -68,8 +34,8 @@ const quantidade_metas_totais = async (firstDAte, endDate) => {
     });
 }
 
-const quantidades_mes = async (firstDAte, endDate) => {
-    const result = await new Promise((resolve, reject) => {
+const quantidadeMetasMes = async (firstDAte, endDate) => {
+    return new Promise((resolve, reject) => {
         db.transaction(tx => {
             tx.executeSql(
                 `
@@ -83,12 +49,10 @@ const quantidades_mes = async (firstDAte, endDate) => {
             )
         })
     });
-
-    return result
 }
 
-const quantidades_mes_concluida = async (firstDAte, endDate) => {
-    const result = await new Promise((resolve, reject) => {
+const quantidadeMetasConcluidasMes = async (firstDAte, endDate) => {
+    return new Promise((resolve, reject) => {
         db.transaction(tx => {
             tx.executeSql(
                 `
@@ -102,35 +66,14 @@ const quantidades_mes_concluida = async (firstDAte, endDate) => {
             )
         })
     });
-
-    return result
 }
 
-const quantidades_semana = async (firstDAte, endDate) => {
-    const result = await new Promise((resolve, reject) => {
-        db.transaction(tx => {
-            tx.executeSql(
-                `
-                    SELECT COUNT(*) AS quantidade, strftime('%W', data) AS semana FROM meta WHERE data BETWEEN ? AND ? GROUP BY semana;
-                    `,
-                [firstDAte, endDate],
-                (_, {rows}) => resolve(rows._array),
-                (_, error) => {
-                    reject(error)
-                }
-            )
-        })
-    });
-
-    return result
-}
-
-const quantidades_semana_concluida = async (firstDAte, endDate) => {
+const quantidadeMetasSemanaMes = async (firstDAte, endDate) => {
     return new Promise((resolve, reject) => {
         db.transaction(tx => {
             tx.executeSql(
                 `
-                    SELECT COUNT(*) AS quantidade, strftime('%W', data) AS semana FROM meta WHERE data BETWEEN ? AND ? AND status = "Concluída" GROUP BY semana;
+                    SELECT COUNT(*) AS quantidade, strftime('%W', data) AS semana, strftime('%m', data) AS mes FROM meta WHERE data BETWEEN ? AND ? GROUP BY semana, mes;
                     `,
                 [firstDAte, endDate],
                 (_, {rows}) => resolve(rows._array),
@@ -142,32 +85,15 @@ const quantidades_semana_concluida = async (firstDAte, endDate) => {
     });
 }
 
-const quantidade_metas_concluidas_categoria = async (firstDAte, endDate, id_categoria) => {
+const quantidadeMetasConcluidasSemanaMes = async (firstDAte, endDate) => {
     return new Promise((resolve, reject) => {
         db.transaction(tx => {
             tx.executeSql(
                 `
-                    SELECT COUNT(*) AS quantidade FROM meta WHERE data BETWEEN ? AND ? AND status = "Concluída" AND id_categoria = ?;
+                    SELECT COUNT(*) AS quantidade, strftime('%W', data) AS semana, strftime('%m', data) AS mes FROM meta WHERE data BETWEEN ? AND ? AND status = "Concluída" GROUP BY semana, mes;
                     `,
-                [firstDAte, endDate, id_categoria],
-                (_, {rows}) => resolve(rows._array[0].quantidade),
-                (_, error) => {
-                    reject(error)
-                }
-            )
-        })
-    });
-}
-
-const quantidade_metas_totais_categoria = async (firstDAte, endDate, id_categoria) => {
-    return new Promise((resolve, reject) => {
-        db.transaction(tx => {
-            tx.executeSql(
-                `
-                    SELECT COUNT(*) AS quantidade FROM meta WHERE data BETWEEN ? AND ? AND id_categoria = ?;
-                    `,
-                [firstDAte, endDate, id_categoria],
-                (_, {rows}) => resolve(rows._array[0].quantidade),
+                [firstDAte, endDate],
+                (_, {rows}) => resolve(rows._array),
                 (_, error) => {
                     reject(error)
                 }
@@ -177,11 +103,65 @@ const quantidade_metas_totais_categoria = async (firstDAte, endDate, id_categori
 }
 
 
+const quantidadeMetasConcluidasCategoria = async (firstDAte, endDate) => {
+    return new Promise((resolve, reject) => {
+        db.transaction(tx => {
+            tx.executeSql(
+                `
+                    SELECT COUNT(*) AS quantidade, c.nome AS categoria FROM meta t, categoria c WHERE t.data BETWEEN ? AND ? AND t.status = "Concluída" AND t.id_categoria = c.id GROUP BY c.nome;
+                    `,
+                [firstDAte, endDate],
+                (_, {rows}) => resolve(rows._array),
+                (_, error) => {
+                    reject(error)
+                }
+            )
+        })
+    });
+}
 
+const quantidadeMetasConcluidasTipo = async (firstDAte, endDate) => {
+    return new Promise((resolve, reject) => {
+        db.transaction(tx => {
+            tx.executeSql(
+                `
+                    SELECT COUNT(*) AS quantidade, tipo FROM meta WHERE data BETWEEN ? AND ? AND status = "Concluída" GROUP BY tipo;
+                    `,
+                [firstDAte, endDate],
+                (_, {rows}) => resolve(rows._array),
+                (_, error) => {
+                    reject(error)
+                }
+            )
+        })
+    });
+}
+
+const quantidadeMetasConcluidasBlocos = async (firstDAte, endDate, bloco) => {
+    return new Promise((resolve, reject) => {
+        db.transaction(tx => {
+            tx.executeSql(
+                `
+                    SELECT COUNT(*) AS quantidade FROM meta WHERE data BETWEEN ? AND ? AND status = "Concluída" AND bloco = ?;
+                    `,
+                [firstDAte, endDate, bloco],
+                (_, {rows}) => resolve(rows._array[0].quantidade),
+                (_, error) => {
+                    reject(error)
+                }
+            )
+        })
+    });
+}
 
 export {
-    quantidade_metas_concluidas,
-    quantidade_metas_totais,
-    quantidades_mes,
-    quantidades_mes_concluida
+    quantidadeMetasConcluidasAno,
+    quantidadeMetasAno,
+    quantidadeMetasConcluidasCategoria,
+    quantidadeMetasConcluidasBlocos,
+    quantidadeMetasMes,
+    quantidadeMetasConcluidasMes,
+    quantidadeMetasSemanaMes,
+    quantidadeMetasConcluidasSemanaMes,
+    quantidadeMetasConcluidasTipo
 }

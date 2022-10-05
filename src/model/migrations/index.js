@@ -3,8 +3,8 @@ import {createCategoria} from "../../services/CategoriaService";
 import {createTarefa} from "../../services/TarefaService";
 import {createMeta} from "../../services/MetaService";
 import {createLembrete} from "../../services/LembreteService";
-import {CONCLUIDA, ATRASADA, PARCIAL} from "../enums/Status";
-import {MANHA, TARDE, NOITE, DESBLOCADO, UMAHORA, MEIAHORA} from "../enums/Bloco";
+import {CONCLUIDA, PARCIAL} from "../enums/Status";
+import {MANHA, TARDE, NOITE, UMAHORA, MEIAHORA} from "../enums/Bloco";
 import {DIARIA, SEMANAL, MENSAL, ANUAL} from "../enums/Tipo";
 
 const tables = ['categoria', 'tarefa', 'meta']
@@ -159,10 +159,10 @@ function getRandomStatus() {
             status = CONCLUIDA
             break
         case 2:
-            status = ATRASADA
+            status = PARCIAL
             break
         case 3:
-            status = PARCIAL
+            status = null
             break
     }
     return status
@@ -188,7 +188,7 @@ function getRandomTipo() {
 }
 
 function getRandomBloco() {
-    let bloco = getRandomInt(1, 5)
+    let bloco = getRandomInt(1, 6)
     switch (bloco) {
         case 1:
             bloco = MANHA
@@ -197,15 +197,12 @@ function getRandomBloco() {
             bloco = TARDE
             break
         case 3:
-            bloco = DESBLOCADO
-            break
-        case 4:
             bloco = UMAHORA
             break
-        case 5:
+        case 4:
             bloco = MEIAHORA
             break
-        case 6:
+        case 5:
             bloco = NOITE
             break
     }
