@@ -226,7 +226,7 @@ export default function CriarMeta({route}) {
                         </TouchableOpacity>
 
                     </View>
-                    <View style={{height: 2}}>
+                    <View style={{height: 5}}>
 
                     </View>
 
