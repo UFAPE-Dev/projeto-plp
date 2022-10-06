@@ -15,6 +15,7 @@ async function allLembretes (){
     })
 
     return result.map((element) => {
+        element.concluida_em = element.concluida_em ? new Date(element.concluida_em) : null
         return new Lembrete(element)
     })
 }

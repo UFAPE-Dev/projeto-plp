@@ -9,16 +9,17 @@ import {allTarefas} from "../../services/TarefaService";
 import {CONCLUIDA, PARCIAL} from "../../model/enums/Status";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import {formatDate, formatTime} from "../../util/dateFormat";
-import styles from "../Metas/styles";
-import CheckBox from 'expo-checkbox';
 import {allLembretes, createLembrete, updateLembrete} from "../../services/LembreteService";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import exibirToast from "../../util/toastAndroid";
 
 export default function Tarefas() {
     const navigate = useNavigation().navigate;
     const [tarefas, setTarefas] = useState([]);
-    const [ordenar, setOrdenar] = useState(true);
+    const [ordenar, setOrdenar] = useState(false);
     const [lembretes, setLembretes] = useState([]);
     const [lembrete, setLembrete] = useState('')
 
@@ -52,7 +53,7 @@ export default function Tarefas() {
             backgroundColor: '#fff',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: 30,
+            borderRadius: 25,
             marginTop: '2%',
             padding: '2%',
 
@@ -72,7 +73,7 @@ export default function Tarefas() {
             bottom: 0,
             borderRadius: 100,
             padding: '2%',
-            backgroundColor: 'blue',
+            backgroundColor: '#006EFF',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 5,
@@ -111,12 +112,14 @@ export default function Tarefas() {
                         <Text style={{
                             color: '#FFC107',
                             marginRight: '10%',
-                            fontSize: widthPercentageToDP('2.5%')
+                            fontSize: widthPercentageToDP('2.5%'),
+                            fontWeight: 'bold'
                         }}>{formatDate(tarefa.data_inicio)}</Text>
                         <FontAwesome5 name={'exclamation-circle'} size={widthPercentageToDP('5%')} color={'#FFC107'}/>
                         <Text style={{
                             color: '#FFC107',
-                            fontSize: widthPercentageToDP('2.5%')
+                            fontSize: widthPercentageToDP('2.5%'),
+                            fontWeight: 'bold'
                         }}>{formatTime(tarefa.data_inicio)} até {formatTime(tarefa.data_fim)}</Text>
                     </>
                 )
@@ -127,6 +130,7 @@ export default function Tarefas() {
                         <Text style={{
                             color: '#4CAF50',
                             marginRight: '10%',
+                            fontWeight: 'bold',
                             fontSize: widthPercentageToDP('2.5%')
                         }}>{formatDate(tarefa.data_inicio)}</Text>
                         <FontAwesome5 name={'check-circle'} size={widthPercentageToDP('5%')} color={'#4CAF50'}/>
@@ -147,11 +151,13 @@ export default function Tarefas() {
                             <Text style={{
                                 color: '#F44336',
                                 marginRight: '10%',
+                                fontWeight: 'bold',
                                 fontSize: widthPercentageToDP('2.5%')
                             }}>{formatDate(tarefa.data_inicio)}</Text>
                             <FontAwesome5 name={'times-circle'} size={widthPercentageToDP('5%')} color={'#F44336'}/>
                             <Text style={{
                                 color: '#F44336',
+                                fontWeight: 'bold',
                                 fontSize: widthPercentageToDP('2.5%')
                             }}>{formatTime(tarefa.data_inicio)} até {formatTime(tarefa.data_fim)}</Text>
                         </>
@@ -162,11 +168,13 @@ export default function Tarefas() {
                         <Text style={{
                             color: '#2196F3',
                             marginRight: '10%',
+                            fontWeight: 'bold',
                             fontSize: widthPercentageToDP('2.5%')
                         }}>{formatDate(tarefa.data_inicio)}</Text>
                         <FontAwesome5 name={'clock'} size={widthPercentageToDP('5%')} color={'#2196F3'}/>
                         <Text style={{
                             color: '#2196F3',
+                            fontWeight: 'bold',
                             fontSize: widthPercentageToDP('2.5%')
                         }}>{formatTime(tarefa.data_inicio)} até {formatTime(tarefa.data_fim)}</Text>
                     </>
@@ -186,7 +194,7 @@ export default function Tarefas() {
                 }
             })}>
             <View style={{flex: 1, width: '100%', flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={{color: 'black', fontSize: 15}}>{item.titulo}</Text>
+                <Text style={{color: 'black', fontSize: 15, fontWeight: 'bold'}}>{item.titulo}</Text>
                 <Text style={{color: 'black', fontSize: 10}}>({item.bloco})</Text>
             </View>
             <View style={{
@@ -203,7 +211,7 @@ export default function Tarefas() {
                     alignItems: 'center',
                     borderRadius: 50
                 }}>
-                    <Text style={{color: 'black', fontSize: 15}}>{item.categoria.nome}</Text>
+                    <Text style={{color: 'white', fontSize: 15}}>{item.categoria.nome}</Text>
                 </View>
                 <View style={{width: '45%'}}>
                     <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
@@ -216,53 +224,68 @@ export default function Tarefas() {
     )
 
     async function handleUpdateLembrete(lembrete) {
-        console.log("Desgraçaaa")
         await updateLembrete({...lembrete, concluida_em: null})
         await initLembretes()
+        exibirToast('Lembrete desmarcado com concluído com sucesso!')
     }
 
     async function handleUpdateLembreteN(lembrete) {
         await updateLembrete({...lembrete, concluida_em: new Date().toISOString()})
         await initLembretes()
+        exibirToast("Lembrete concluído com sucesso!")
     }
 
     const renderItemLembrete = ({item}) => (
-        <View style={{width: '100%', flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', marginTop: '2%', marginRight: '2%', borderRadius: 15}}>
             <TouchableOpacity
-                style={{width: 15, height: 15, backgroundColor: 'blue'}}
                 onPress={(a) => {
-                    handleUpdateLembrete(item)
-                }}
-            />
-            <Text>{item.descricao}</Text>
+                    handleUpdateLembreteN(item)
+                }}>
+                <MaterialCommunityIcons name={'checkbox-blank-outline'} size={25}/>
+            </TouchableOpacity>
+            <Text style={{maxWidth: '90%'}}>{item.descricao}</Text>
         </View>
     )
 
     const renderItemLembreteN = ({item}) => (
-        <View style={{width: '100%', flexDirection: 'row'}}>
+        <View style={{width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', marginTop: '2%', marginRight: '2%', borderRadius: 15}}>
             <TouchableOpacity
-                style={{width: 15, height: 15, backgroundColor: 'red'}}
                 onPress={(a) => {
-                    handleUpdateLembreteN(item)
+                    handleUpdateLembrete(item)
                 }}
-            />
+            >
+                <Ionicons name={'checkbox'} size={25} color={'#1492E6'}/>
+            </TouchableOpacity>
             <Text>{item.descricao}</Text>
         </View>
     )
 
     async function adicionarLembrete() {
-        await createLembrete({descricao: lembrete, concluida_em: null, data: new Date().toISOString()})
-        await initLembretes()
+        if(lembrete.length > 0) {
+            await createLembrete({descricao: lembrete, concluida_em: null, data: new Date().toISOString()})
+            await initLembretes()
+            setLembrete('')
+            exibirToast("Lembrete adicionado com sucesso!")
+        }else {
+            exibirToast("Preencha o campo de lembrete")
+        }
+
     }
 
 
     return (
-        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
+        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, backgroundColor: 'white'}}>
             <View style={{flex: 1}}>
                 <Swiper style={styles.wrapper}>
-                    <View style={styles.slide1}>
-                        <View style={{justifyContent: 'space-between'}}>
-                            <Text>Hoje</Text>
+                    <View style={{
+                        padding: '3%',
+                        margin: '2%',
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 30,
+                        height: '100%'
+                    }}>
+                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Hoje</Text>
                             <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
                                 <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
                             </TouchableOpacity>
@@ -284,9 +307,15 @@ export default function Tarefas() {
                             keyExtractor={item => item.id}
                         />
                     </View>
-                    <View style={styles.slide2}>
-                        <View style={{justifyContent: 'space-between'}}>
-                            <Text>Esta semana</Text>
+                    <View style={{
+                        padding: '3%',
+                        margin: '2%',
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 30,
+                        height: '100%'
+                    }}>
+                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Esta semana</Text>
                             <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
                                 <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
                             </TouchableOpacity>
@@ -308,9 +337,15 @@ export default function Tarefas() {
                             keyExtractor={item => item.id}
                         />
                     </View>
-                    <View style={styles.slide3}>
-                        <View style={{justifyContent: 'space-between'}}>
-                            <Text>Este mês</Text>
+                    <View style={{
+                        padding: '3%',
+                        margin: '2%',
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 30,
+                        height: '100%'
+                    }}>
+                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Este mês</Text>
                             <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
                                 <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
                             </TouchableOpacity>
@@ -332,9 +367,15 @@ export default function Tarefas() {
                             keyExtractor={item => item.id}
                         />
                     </View>
-                    <View style={styles.slide4}>
-                        <View style={{justifyContent: 'space-between'}}>
-                            <Text>Todas</Text>
+                    <View style={{
+                        padding: '3%',
+                        margin: '2%',
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 30,
+                        height: '100%'
+                    }}>
+                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Todas</Text>
                             <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
                                 <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
                             </TouchableOpacity>
@@ -359,20 +400,24 @@ export default function Tarefas() {
                 </Swiper>
             </View>
 
-            <View style={{flex: 1}}>
-                <View style={{flex: 1}}>
-                    <FlatList data={lembretes.filter(el => el.concluida_em != null)} renderItem={renderItemLembrete}
+            <View style={{flex: 1, padding: '3%'}}>
+                <Text style={{fontWeight: 'bold', fontSize: 17}}>Lembretes</Text>
+                <View style={{flex: 1, backgroundColor: '#EFEFEF',
+                    borderRadius: 10, padding: '1%'}}>
+                    <FlatList data={lembretes.filter(el => el.concluida_em == null)} renderItem={renderItemLembrete}
                               keyExtractor={item => item.id}/>
 
                 </View>
-                <View style={{flex: 1}}>
-                    <FlatList data={lembretes.filter(el => el.concluida_em == null)} renderItem={renderItemLembreteN}
+                <Text style={{fontWeight: 'bold', fontSize: 17}}>Concluídos</Text>
+                <View style={{flex: 1, backgroundColor: '#EFEFEF',
+                    borderRadius: 10, padding: '1%'}}>
+                    <FlatList data={lembretes.filter(el => el.concluida_em != null)} renderItem={renderItemLembreteN}
                               keyExtractor={item => item.id}/>
                 </View>
-                <View>
-                    <Input title={'Lembrete'} value={lembrete}  onChangeText={setLembrete}/>
+                <View style={{flex: 1}}>
+                    <Input placeholder={"Informe um texto para salvar um novo lembrete"} title={'Lembrete'} value={lembrete} onChangeText={setLembrete}/>
                     <Button color={'orange'} onPress={adicionarLembrete}>
-                        <Text style={{color: 'white'}}>Adicionar</Text>
+                        <Text style={{color: 'white', fontWeight: 'bold'}}>Adicionar lembrete</Text>
                     </Button>
                 </View>
             </View>

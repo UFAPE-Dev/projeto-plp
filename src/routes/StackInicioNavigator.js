@@ -9,7 +9,18 @@ export default function StackInicioNavigator() {
 
 
     return (
-        <Navigator initialRouteName={''}>
+        <Navigator
+            initialRouteName={''}
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: '#006EFF',
+                },
+                headerTintColor: 'white',
+                headerTitleStyle: {
+                    fontWeight: 'bold',
+                }
+            }}
+        >
             <Screen
                 options={{headerShown: false}}
                 name={'bottomTabNavigator'}
