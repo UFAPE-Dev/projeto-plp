@@ -53,8 +53,6 @@ export default function CriarTarefa({route}) {
 
     const [mode, setMode] = useState('date');
 
-    console.log(geralInfo)
-
 
     // Muda setShow para true o que faz com que DateTimePicker apareça na tela.
     const showMode = (currentMode) => {
