@@ -250,7 +250,7 @@ export default function CriarTarefa({route}) {
     }
 
     return (
-        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, padding: '3%', width: '100%', maxHeight: "85%"}}>
+        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, padding: '3%', width: '100%', maxHeight: "72%"}}>
             {showPicker && (
                 <DateTimePicker
                     testID="dateTimePicker"
@@ -277,9 +277,10 @@ export default function CriarTarefa({route}) {
                         />
                     </View>
                 </View>
+           
                 <Button color={"red"} onPress={salvarCategoria}>
-                    <Text style={{color: 'white'}}>Salvar</Text>
-                </Button>
+                        <Text style={{color: 'white'}}>Salvar</Text>
+                    </Button>
             </Modal>
             <Card
                 title={"Criar nova tarefa"}
@@ -307,9 +308,12 @@ export default function CriarTarefa({route}) {
                                 {renderCategoriaList()}
                             </Picker>
                         </View>
-                        <Button onPress={() => setModalVisible(true)} color={"blue"}>
-                            <Text style={{color: "white"}}>Criar nova categoria</Text>
-                        </Button>
+                            <View style={{flex:0.6}}>
+                            <Button onPress={() => setModalVisible(true)} color={"#4169E1"}>
+                                <Text style={{color: "white"}}>Criar nova categoria</Text>
+                            </Button>
+                        </View>
+                        
                     </View>
 
                     <View style={{flex: 1, flexDirection: "row"}}>
@@ -353,18 +357,26 @@ export default function CriarTarefa({route}) {
                 </ScrollView>
             </Card>
             <View>
+            <View style={{height: 12}}>
+                </View>
                 <Button color={'purple'} onPress={criarTarefa}>
                     <Text style={{color: 'white'}}>Salvar Tarefa</Text>
                 </Button>
                 {
                     tarefa && (
                         <>
+                        <View style={{height: 12}}>
+                </View>
                             <Button color={'orange'} onPress={concluirTarefaParcialmenteHold}>
                                 <Text style={{color: 'white'}}>Concluir tarefa parcialmente</Text>
                             </Button>
+                            <View style={{height: 12}}>
+                </View>
                             <Button color={'green'} onPress={concluirTarefaHold}>
                                 <Text style={{color: 'white'}}>Concluir Tarefa</Text>
                             </Button>
+                            <View style={{height: 12}}>
+                </View>
                             <Button color={'red'} onPress={excluiTarefa}>
                                 <Text style={{color: 'white'}}>Excluir Tarefa</Text>
                             </Button>

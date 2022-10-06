@@ -117,7 +117,7 @@ export default function CriarMeta() {
                 />
             )}
             <Modal title={"Criar nova categoria"} visible={modalVisible} modalToggle={() => setModalVisible(!modalVisible)}>
-                <View style={{padding: "3%", flex: 1, flexDirection: 'row', alignItems: "center"}}>
+                <View style={{padding: "3%", flex: 1, flexDirection: 'row', alignItems: "center", width: '100%', maxHeight: "65%"}}>
                     <View style={{flex:1, alignItems: 'center'}}>
                         <Input
                             defaultValue={categoriaInfo.nome}
@@ -134,9 +134,9 @@ export default function CriarMeta() {
                         />
                     </View>
                 </View>
-                <Button color={"red"} onPress={salvarCategoria}>
-                    <Text style={{color: 'white'}}>Salvar</Text>
-                </Button>
+                    <Button color={"red"} onPress={salvarCategoria}>
+                        <Text style={{color: 'white'}}>Salvar</Text>
+                    </Button>
             </Modal>
             <Card
                 title={"Criar nova meta"}
