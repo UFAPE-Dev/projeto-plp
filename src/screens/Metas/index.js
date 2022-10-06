@@ -1,6 +1,6 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, FlatList} from 'react-native';
-import styles from './styles';
+//import styles from './styles';
 import Feather from "react-native-vector-icons/Feather";
 import {widthPercentageToDP} from "../../util/normalizador";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
@@ -8,19 +8,31 @@ import Swiper from 'react-native-swiper';
 import {CONCLUIDA, PARCIAL} from "../../model/enums/Status";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import {formatDate, formatTime} from "../../util/dateFormat";
-import { allMetas } from '../../services/MetaService';
+import {allLembretes, createLembrete, updateLembrete} from "../../services/LembreteService";
+import Input from "../../components/Input";
+import Button from "../../components/Button";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import exibirToast from "../../util/toastAndroid";
+import {allMetas} from "../../services/MetaService";
+import {ANUAL, MENSAL, SEMANAL} from "../../model/enums/Tipo";
 
-export default function Metas() {
+export default function Tarefas() {
     const navigate = useNavigation().navigate;
     const [metas, setMetas] = useState([]);
-    const [ordenar, setOrdenar] = useState(true);
+    const [ordenar, setOrdenar] = useState(false);
+    const [lembretes, setLembretes] = useState([]);
+    const [lembrete, setLembrete] = useState('')
+
 
     useFocusEffect(useCallback(() => {
         let isActive = true;
 
         async function init() {
-            let metasSalvas = await allMetas();
-            setMetas(metasSalvas);
+            const metas = await allMetas()
+            setMetas(metas)
+
+            await initLembretes()
         }
 
         init()
@@ -30,24 +42,77 @@ export default function Metas() {
         };
     }, []))
 
-    const metasHoje = metas.filter(meta => {
-        const data = new Date(meta.data)
-        const hoje = new Date()
-        return data.getDate() === hoje.getDate() && data.getMonth() === hoje.getMonth() && data.getFullYear() === hoje.getFullYear()
+    async function initLembretes() {
+        const lembretes = await allLembretes()
+        setLembretes(lembretes)
+    }
+
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            height: 70,
+            backgroundColor: '#fff',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 25,
+            marginTop: '2%',
+            padding: '2%',
+
+            shadowColor: "#000",
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+
+            elevation: 5,
+        },
+        addButton: {
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            borderRadius: 100,
+            padding: '2%',
+            backgroundColor: '#006EFF',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 5,
+            elevation: 15,
+            marginRight: '1%',
+            marginBottom: '1%'
+        }
     })
 
+    //filter metas for today
+    const metasAnuais = metas.filter(meta => {
+        return meta.tipo === ANUAL
+    })
+
+    //filter metas for this week
     const metasSemana = metas.filter(meta => {
-        const data = new Date(meta.data)
-        const hoje = new Date()
-        return data.getDate() >= hoje.getDate() && data.getMonth() === hoje.getMonth() && data.getFullYear() === hoje.getFullYear()
+        return meta.tipo === SEMANAL
     })
 
+    //filter metas for this month
     const metasMes = metas.filter(meta => {
-        const data = new Date(meta.data)
-        const hoje = new Date()
-        return data.getMonth() === hoje.getMonth() && data.getFullYear() === hoje.getFullYear()
+        return meta.tipo === MENSAL
     })
 
+    const mapMeses = [
+        'Janeiro',
+        'Fevereiro',
+        'Março',
+        'Abril',
+        'Maio',
+        'Junho',
+        'Julho',
+        'Agosto',
+        'Setembro',
+        'Outubro',
+        'Novembro',
+        'Dezembro'
+    ]
 
     function getStatus(meta) {
         switch (meta.status) {
@@ -56,10 +121,15 @@ export default function Metas() {
                     <>
                         <Text style={{
                             color: '#FFC107',
-                            marginRight: '10%',
-                            fontSize: widthPercentageToDP('2.5%')
+                            fontSize: widthPercentageToDP('2.5%'),
+                            fontWeight: 'bold'
                         }}>{formatDate(meta.data)}</Text>
                         <FontAwesome5 name={'exclamation-circle'} size={widthPercentageToDP('5%')} color={'#FFC107'}/>
+                        <Text style={{
+                            color: '#FFC107',
+                            fontSize: widthPercentageToDP('2.5%'),
+                            fontWeight: 'bold'
+                        }}>{formatTime(meta.data)}</Text>
                     </>
                 )
 
@@ -68,25 +138,51 @@ export default function Metas() {
                     <>
                         <Text style={{
                             color: '#4CAF50',
-                            marginRight: '10%',
+                            fontWeight: 'bold',
                             fontSize: widthPercentageToDP('2.5%')
                         }}>{formatDate(meta.data)}</Text>
                         <FontAwesome5 name={'check-circle'} size={widthPercentageToDP('5%')} color={'#4CAF50'}/>
+                        <Text style={{
+                            color: '#4CAF50',
+                            fontSize: widthPercentageToDP('2.5%')
+                        }}>{formatTime(meta.data)}</Text>
                     </>
                 )
             case null:
+                const texto = (tipo, data) => {
+                    switch (tipo) {
+                        case ANUAL:
+                            return 'Concluir até o ano ' + data.getFullYear()
+                        case MENSAL:
+                            return 'Concluir até o mês ' + mapMeses[data.getMonth()] + ' de ' + data.getFullYear()
+                        case SEMANAL:
+                            return 'Concluir até a semana do dia ' + formatDate(data)
+                    }
+                }
                 let data = meta.data
                 if (typeof meta.data === 'string') {
                     data = new Date(meta.data)
                 }
-                if (data < new Date()) {
+                let atrasada = false
+                switch (meta.tipo) {
+                    case ANUAL:
+                    atrasada = data.getFullYear() < new Date().getFullYear()
+                        break;
+                    case MENSAL:
+                        atrasada = data.getMonth() < new Date().getMonth() && data.getFullYear() <= new Date().getFullYear()
+                        break;
+                    case SEMANAL:
+                        atrasada = data < new Date()
+                        break;
+                }
+                if (atrasada) {
                     return (
                         <>
                             <Text style={{
                                 color: '#F44336',
-                                marginRight: '10%',
+                                fontWeight: 'bold',
                                 fontSize: widthPercentageToDP('2.5%')
-                            }}>{formatDate(meta.data)}</Text>
+                            }}>{texto(meta.tipo, meta.data)}</Text>
                             <FontAwesome5 name={'times-circle'} size={widthPercentageToDP('5%')} color={'#F44336'}/>
                         </>
                     )
@@ -95,9 +191,9 @@ export default function Metas() {
                     <>
                         <Text style={{
                             color: '#2196F3',
-                            marginRight: '10%',
+                            fontWeight: 'bold',
                             fontSize: widthPercentageToDP('2.5%')
-                        }}>{formatDate(meta.data)}</Text>
+                        }}>{texto(meta.tipo, meta.data)}</Text>
                         <FontAwesome5 name={'clock'} size={widthPercentageToDP('5%')} color={'#2196F3'}/>
                     </>
                 )
@@ -107,9 +203,16 @@ export default function Metas() {
     const renderItem = ({item}) => (
         <TouchableOpacity
             style={styles.container}
-            onPress={() => navigate('Nova Meta', {meta: {...item, data: item.data?.toISOString(), concluida_em: item.concluida_em?.toISOString()}})}>
+            onPress={() => navigate('Nova Meta', {
+                meta: {
+                    ...item,
+                    data: item.data?.toISOString(),
+                    concluida_em: item.concluida_em?.toISOString()
+                }
+            })}>
             <View style={{flex: 1, width: '100%', flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={{color: 'black', fontSize: 15}}>{item.titulo}</Text>
+                <Text style={{color: 'black', fontSize: 15, fontWeight: 'bold'}}>{item.titulo}</Text>
+                <Text style={{color: 'black', fontSize: 10}}>({item.tipo})</Text>
             </View>
             <View style={{
                 flex: 1,
@@ -125,7 +228,7 @@ export default function Metas() {
                     alignItems: 'center',
                     borderRadius: 50
                 }}>
-                    <Text style={{color: 'black', fontSize: 15}}>{item.categoria.nome}</Text>
+                    <Text style={{color: 'white', fontSize: 15}}>{item.categoria.nome}</Text>
                 </View>
                 <View style={{width: '45%'}}>
                     <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
@@ -137,109 +240,175 @@ export default function Metas() {
 
     )
 
+    async function handleUpdateLembrete(lembrete) {
+        await updateLembrete({...lembrete, concluida_em: null})
+        await initLembretes()
+        exibirToast('Lembrete desmarcado com concluído com sucesso!')
+    }
 
+    async function handleUpdateLembreteN(lembrete) {
+        await updateLembrete({...lembrete, concluida_em: new Date().toISOString()})
+        await initLembretes()
+        exibirToast("Lembrete concluído com sucesso!")
+    }
+
+    const renderItemLembrete = ({item}) => (
+        <View style={{width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', marginTop: '2%', marginRight: '2%', borderRadius: 15}}>
+            <TouchableOpacity
+                onPress={(a) => {
+                    handleUpdateLembreteN(item)
+                }}>
+                <MaterialCommunityIcons name={'checkbox-blank-outline'} size={25}/>
+            </TouchableOpacity>
+            <Text style={{maxWidth: '90%'}}>{item.descricao}</Text>
+        </View>
+    )
+
+    const renderItemLembreteN = ({item}) => (
+        <View style={{width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', marginTop: '2%', marginRight: '2%', borderRadius: 15}}>
+            <TouchableOpacity
+                onPress={(a) => {
+                    handleUpdateLembrete(item)
+                }}
+            >
+                <Ionicons name={'checkbox'} size={25} color={'#1492E6'}/>
+            </TouchableOpacity>
+            <Text>{item.descricao}</Text>
+        </View>
+    )
+
+    async function adicionarLembrete() {
+        if(lembrete.length > 0) {
+            await createLembrete({descricao: lembrete, concluida_em: null, data: new Date().toISOString()})
+            await initLembretes()
+            setLembrete('')
+            exibirToast("Lembrete adicionado com sucesso!")
+        }else {
+            exibirToast("Preencha o campo de lembrete")
+        }
+
+    }
 
 
     return (
-        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
-            <Swiper style={styles.wrapper}>
-                <View style={styles.slide1}>
-                    <View style={{justifyContent: 'space-between'}}>
-                        <Text>Hoje</Text>
-                        <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
-                            <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
-                        </TouchableOpacity>
-                    </View>
+        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, backgroundColor: 'white'}}>
+            <View style={{flex: 1}}>
+                <Swiper style={styles.wrapper}>
+                    <View style={{
+                        padding: '3%',
+                        margin: '2%',
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 30,
+                        height: '100%'
+                    }}>
+                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Metais anuais</Text>
+                            <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
+                                <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
+                            </TouchableOpacity>
+                        </View>
 
-                    <FlatList
-                        data={ordenar ?
-                            [...metasHoje].sort((a, b) => {
-                                if (a.categoria.nome < b.categoria.nome) {
-                                    return -1;
-                                }
-                                if (a.categoria.nome > b.categoria.nome) {
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                            : metasHoje}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                    />
-                </View>
-                <View style={styles.slide2}>
-                    <View style={{justifyContent: 'space-between'}}>
-                        <Text>Esta semana</Text>
-                        <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
-                            <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
-                        </TouchableOpacity>
+                        <FlatList
+                            data={ordenar ?
+                                [...metasAnuais].sort((a, b) => {
+                                    if (a.categoria.nome < b.categoria.nome) {
+                                        return -1;
+                                    }
+                                    if (a.categoria.nome > b.categoria.nome) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                })
+                                : metasAnuais}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id}
+                        />
                     </View>
+                    <View style={{
+                        padding: '3%',
+                        margin: '2%',
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 30,
+                        height: '100%'
+                    }}>
+                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Metas semanais</Text>
+                            <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
+                                <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
+                            </TouchableOpacity>
+                        </View>
 
-                    <FlatList
-                        data={ordenar ?
-                            [...metasSemana].sort((a, b) => {
-                                if (a.categoria.nome < b.categoria.nome) {
-                                    return -1;
-                                }
-                                if (a.categoria.nome > b.categoria.nome) {
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                            : metasSemana}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                    />
-                </View>
-                <View style={styles.slide3}>
-                    <View style={{justifyContent: 'space-between'}}>
-                        <Text>Este mês</Text>
-                        <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
-                            <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
-                        </TouchableOpacity>
+                        <FlatList
+                            data={ordenar ?
+                                [...metasSemana].sort((a, b) => {
+                                    if (a.categoria.nome < b.categoria.nome) {
+                                        return -1;
+                                    }
+                                    if (a.categoria.nome > b.categoria.nome) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                })
+                                : metasSemana}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id}
+                        />
                     </View>
+                    <View style={{
+                        padding: '3%',
+                        margin: '2%',
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 30,
+                        height: '100%'
+                    }}>
+                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Metas mensais</Text>
+                            <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
+                                <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
+                            </TouchableOpacity>
+                        </View>
 
-                    <FlatList
-                        data={ordenar ?
-                            [...metasMes].sort((a, b) => {
-                                if (a.categoria.nome < b.categoria.nome) {
-                                    return -1;
-                                }
-                                if (a.categoria.nome > b.categoria.nome) {
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                            : metasMes}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                    />
-                </View>
-                <View style={styles.slide4}>
-                    <View style={{justifyContent: 'space-between'}}>
-                        <Text>Todas</Text>
-                        <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
-                            <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
-                        </TouchableOpacity>
+                        <FlatList
+                            data={ordenar ?
+                                [...metasMes].sort((a, b) => {
+                                    if (a.categoria.nome < b.categoria.nome) {
+                                        return -1;
+                                    }
+                                    if (a.categoria.nome > b.categoria.nome) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                })
+                                : metasMes}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id}
+                        />
                     </View>
+                </Swiper>
+            </View>
 
-                    <FlatList
-                        data={ordenar ?
-                            [...metas].sort((a, b) => {
-                                if (a.categoria.nome < b.categoria.nome) {
-                                    return -1;
-                                }
-                                if (a.categoria.nome > b.categoria.nome) {
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                            : metas}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                    />
+            <View style={{flex: 1, padding: '3%'}}>
+                <Text style={{fontWeight: 'bold', fontSize: 17}}>Lembretes</Text>
+                <View style={{flex: 1, backgroundColor: '#EFEFEF',
+                    borderRadius: 10, padding: '1%'}}>
+                    <FlatList data={lembretes.filter(el => el.concluida_em == null)} renderItem={renderItemLembrete}
+                              keyExtractor={item => item.id}/>
+
                 </View>
-            </Swiper>
+                <Text style={{fontWeight: 'bold', fontSize: 17}}>Concluídos</Text>
+                <View style={{flex: 1, backgroundColor: '#EFEFEF',
+                    borderRadius: 10, padding: '1%'}}>
+                    <FlatList data={lembretes.filter(el => el.concluida_em != null)} renderItem={renderItemLembreteN}
+                              keyExtractor={item => item.id}/>
+                </View>
+                <View style={{flex: 1}}>
+                    <Input placeholder={"Informe um texto para salvar um novo lembrete"} title={'Lembrete'} value={lembrete} onChangeText={setLembrete}/>
+                    <Button color={'orange'} onPress={adicionarLembrete}>
+                        <Text style={{color: 'white', fontWeight: 'bold'}}>Adicionar lembrete</Text>
+                    </Button>
+                </View>
+            </View>
+
             <TouchableOpacity onPress={() => navigate('Nova Meta')} style={styles.addButton}>
                 <Feather name={'plus'} size={widthPercentageToDP('6%')} color={'white'}/>
             </TouchableOpacity>
