@@ -117,12 +117,12 @@ export default function Tarefas() {
             case PARCIAL:
                 return (
                     <>
+                        <FontAwesome5 name={'exclamation-circle'} size={widthPercentageToDP('5%')} color={'#FFC107'}/>
                         <Text style={{
                             color: '#FFC107',
                             fontSize: widthPercentageToDP('2.5%'),
                             fontWeight: 'bold'
-                        }}>{formatDate(meta.data)}</Text>
-                        <FontAwesome5 name={'exclamation-circle'} size={widthPercentageToDP('5%')} color={'#FFC107'}/>
+                        }}>{formatDate(meta.data)} - </Text>
                         <Text style={{
                             color: '#FFC107',
                             fontSize: widthPercentageToDP('2.5%'),
@@ -134,12 +134,13 @@ export default function Tarefas() {
             case CONCLUIDA:
                 return (
                     <>
+                        <FontAwesome5 name={'check-circle'} size={widthPercentageToDP('5%')} color={'#4CAF50'}/>
                         <Text style={{
                             color: '#4CAF50',
                             fontWeight: 'bold',
                             fontSize: widthPercentageToDP('2.5%')
-                        }}>{formatDate(meta.data)}</Text>
-                        <FontAwesome5 name={'check-circle'} size={widthPercentageToDP('5%')} color={'#4CAF50'}/>
+                        }}>{formatDate(meta.data)} - </Text>
+
                         <Text style={{
                             color: '#4CAF50',
                             fontSize: widthPercentageToDP('2.5%')
@@ -181,23 +182,24 @@ export default function Tarefas() {
                 if (atrasada) {
                     return (
                         <>
+                            <FontAwesome5 name={'times-circle'} size={widthPercentageToDP('5%')} color={'#F44336'}/>
                             <Text style={{
                                 color: '#F44336',
                                 fontWeight: 'bold',
                                 fontSize: widthPercentageToDP('2.5%')
                             }}>{texto(meta.tipo, meta.data)}</Text>
-                            <FontAwesome5 name={'times-circle'} size={widthPercentageToDP('5%')} color={'#F44336'}/>
+
                         </>
                     )
                 }
                 return (
                     <>
+                        <FontAwesome5 name={'clock'} size={widthPercentageToDP('5%')} color={'#2196F3'}/>
                         <Text style={{
                             color: '#2196F3',
                             fontWeight: 'bold',
                             fontSize: widthPercentageToDP('2.5%')
                         }}>{texto(meta.tipo, meta.data)}</Text>
-                        <FontAwesome5 name={'clock'} size={widthPercentageToDP('5%')} color={'#2196F3'}/>
                     </>
                 )
         }
