@@ -10,11 +10,18 @@ import {CONCLUIDA, PARCIAL} from "../../model/enums/Status";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import {formatDate, formatTime} from "../../util/dateFormat";
 import styles from "../Metas/styles";
+import CheckBox from 'expo-checkbox';
+import {allLembretes, createLembrete, updateLembrete} from "../../services/LembreteService";
+import Input from "../../components/Input";
+import Button from "../../components/Button";
 
 export default function Tarefas() {
     const navigate = useNavigation().navigate;
     const [tarefas, setTarefas] = useState([]);
     const [ordenar, setOrdenar] = useState(true);
+    const [lembretes, setLembretes] = useState([]);
+    const [lembrete, setLembrete] = useState('')
+
 
     useFocusEffect(useCallback(() => {
         let isActive = true;
@@ -22,6 +29,8 @@ export default function Tarefas() {
         async function init() {
             const tarefas = await allTarefas()
             setTarefas(tarefas)
+
+            await initLembretes()
         }
 
         init()
@@ -30,6 +39,11 @@ export default function Tarefas() {
             isActive = false;
         };
     }, []))
+
+    async function initLembretes() {
+        const lembretes = await allLembretes()
+        setLembretes(lembretes)
+    }
 
     const styles = StyleSheet.create({
         container: {
@@ -163,7 +177,14 @@ export default function Tarefas() {
     const renderItem = ({item}) => (
         <TouchableOpacity
             style={styles.container}
-            onPress={() => navigate('Nova Tarefa', {tarefa: {...item, data_inicio: item.data_inicio?.toISOString(), data_fim: item.data_fim?.toISOString(), concluida_em: item.concluida_em?.toISOString()}})}>
+            onPress={() => navigate('Nova Tarefa', {
+                tarefa: {
+                    ...item,
+                    data_inicio: item.data_inicio?.toISOString(),
+                    data_fim: item.data_fim?.toISOString(),
+                    concluida_em: item.concluida_em?.toISOString()
+                }
+            })}>
             <View style={{flex: 1, width: '100%', flexDirection: 'row', alignItems: 'center'}}>
                 <Text style={{color: 'black', fontSize: 15}}>{item.titulo}</Text>
                 <Text style={{color: 'black', fontSize: 10}}>({item.bloco})</Text>
@@ -194,107 +215,168 @@ export default function Tarefas() {
 
     )
 
+    async function handleUpdateLembrete(lembrete) {
+        console.log("Desgraçaaa")
+        await updateLembrete({...lembrete, concluida_em: null})
+        await initLembretes()
+    }
+
+    async function handleUpdateLembreteN(lembrete) {
+        await updateLembrete({...lembrete, concluida_em: new Date().toISOString()})
+        await initLembretes()
+    }
+
+    const renderItemLembrete = ({item}) => (
+        <View style={{width: '100%', flexDirection: 'row', alignItems: 'center'}}>
+            <TouchableOpacity
+                style={{width: 15, height: 15, backgroundColor: 'blue'}}
+                onPress={(a) => {
+                    handleUpdateLembrete(item)
+                }}
+            />
+            <Text>{item.descricao}</Text>
+        </View>
+    )
+
+    const renderItemLembreteN = ({item}) => (
+        <View style={{width: '100%', flexDirection: 'row'}}>
+            <TouchableOpacity
+                style={{width: 15, height: 15, backgroundColor: 'red'}}
+                onPress={(a) => {
+                    handleUpdateLembreteN(item)
+                }}
+            />
+            <Text>{item.descricao}</Text>
+        </View>
+    )
+
+    async function adicionarLembrete() {
+        await createLembrete({descricao: lembrete, concluida_em: null, data: new Date().toISOString()})
+        await initLembretes()
+    }
+
 
     return (
         <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
-            <Swiper style={styles.wrapper}>
-                <View style={styles.slide1}>
-                    <View style={{justifyContent: 'space-between'}}>
-                        <Text>Hoje</Text>
-                        <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
-                            <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
-                        </TouchableOpacity>
-                    </View>
+            <View style={{flex: 1}}>
+                <Swiper style={styles.wrapper}>
+                    <View style={styles.slide1}>
+                        <View style={{justifyContent: 'space-between'}}>
+                            <Text>Hoje</Text>
+                            <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
+                                <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
+                            </TouchableOpacity>
+                        </View>
 
-                    <FlatList
-                        data={ordenar ?
-                            [...tarefasHoje].sort((a, b) => {
-                                if (a.categoria.nome < b.categoria.nome) {
-                                    return -1;
-                                }
-                                if (a.categoria.nome > b.categoria.nome) {
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                            : tarefasHoje}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                    />
-                </View>
-                <View style={styles.slide2}>
-                    <View style={{justifyContent: 'space-between'}}>
-                        <Text>Esta semana</Text>
-                        <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
-                            <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
-                        </TouchableOpacity>
+                        <FlatList
+                            data={ordenar ?
+                                [...tarefasHoje].sort((a, b) => {
+                                    if (a.categoria.nome < b.categoria.nome) {
+                                        return -1;
+                                    }
+                                    if (a.categoria.nome > b.categoria.nome) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                })
+                                : tarefasHoje}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id}
+                        />
                     </View>
+                    <View style={styles.slide2}>
+                        <View style={{justifyContent: 'space-between'}}>
+                            <Text>Esta semana</Text>
+                            <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
+                                <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
+                            </TouchableOpacity>
+                        </View>
 
-                    <FlatList
-                        data={ordenar ?
-                            [...tarefasSemana].sort((a, b) => {
-                                if (a.categoria.nome < b.categoria.nome) {
-                                    return -1;
-                                }
-                                if (a.categoria.nome > b.categoria.nome) {
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                            : tarefasSemana}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                    />
-                </View>
-                <View style={styles.slide3}>
-                    <View style={{justifyContent: 'space-between'}}>
-                        <Text>Este mês</Text>
-                        <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
-                            <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
-                        </TouchableOpacity>
+                        <FlatList
+                            data={ordenar ?
+                                [...tarefasSemana].sort((a, b) => {
+                                    if (a.categoria.nome < b.categoria.nome) {
+                                        return -1;
+                                    }
+                                    if (a.categoria.nome > b.categoria.nome) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                })
+                                : tarefasSemana}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id}
+                        />
                     </View>
+                    <View style={styles.slide3}>
+                        <View style={{justifyContent: 'space-between'}}>
+                            <Text>Este mês</Text>
+                            <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
+                                <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
+                            </TouchableOpacity>
+                        </View>
 
-                    <FlatList
-                        data={ordenar ?
-                            [...tarefasMes].sort((a, b) => {
-                                if (a.categoria.nome < b.categoria.nome) {
-                                    return -1;
-                                }
-                                if (a.categoria.nome > b.categoria.nome) {
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                            : tarefasMes}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                    />
-                </View>
-                <View style={styles.slide4}>
-                    <View style={{justifyContent: 'space-between'}}>
-                        <Text>Todas</Text>
-                        <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
-                            <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
-                        </TouchableOpacity>
+                        <FlatList
+                            data={ordenar ?
+                                [...tarefasMes].sort((a, b) => {
+                                    if (a.categoria.nome < b.categoria.nome) {
+                                        return -1;
+                                    }
+                                    if (a.categoria.nome > b.categoria.nome) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                })
+                                : tarefasMes}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id}
+                        />
                     </View>
+                    <View style={styles.slide4}>
+                        <View style={{justifyContent: 'space-between'}}>
+                            <Text>Todas</Text>
+                            <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
+                                <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
+                            </TouchableOpacity>
+                        </View>
 
-                    <FlatList
-                        data={ordenar ?
-                            [...tarefas].sort((a, b) => {
-                                if (a.categoria.nome < b.categoria.nome) {
-                                    return -1;
-                                }
-                                if (a.categoria.nome > b.categoria.nome) {
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                            : tarefas}
-                        renderItem={renderItem}
-                        keyExtractor={item => item.id}
-                    />
+                        <FlatList
+                            data={ordenar ?
+                                [...tarefas].sort((a, b) => {
+                                    if (a.categoria.nome < b.categoria.nome) {
+                                        return -1;
+                                    }
+                                    if (a.categoria.nome > b.categoria.nome) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                })
+                                : tarefas}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id}
+                        />
+                    </View>
+                </Swiper>
+            </View>
+
+            <View style={{flex: 1}}>
+                <View style={{flex: 1}}>
+                    <FlatList data={lembretes.filter(el => el.concluida_em != null)} renderItem={renderItemLembrete}
+                              keyExtractor={item => item.id}/>
+
                 </View>
-            </Swiper>
+                <View style={{flex: 1}}>
+                    <FlatList data={lembretes.filter(el => el.concluida_em == null)} renderItem={renderItemLembreteN}
+                              keyExtractor={item => item.id}/>
+                </View>
+                <View>
+                    <Input title={'Lembrete'} value={lembrete}  onChangeText={setLembrete}/>
+                    <Button color={'orange'} onPress={adicionarLembrete}>
+                        <Text style={{color: 'white'}}>Adicionar</Text>
+                    </Button>
+                </View>
+            </View>
+
             <TouchableOpacity onPress={() => navigate('Nova Tarefa')} style={styles.addButton}>
                 <Feather name={'plus'} size={widthPercentageToDP('6%')} color={'white'}/>
             </TouchableOpacity>
