@@ -17,9 +17,9 @@ export default function Estatisticas() {
     return (
         <>
             <Button color={'red'} onPress={() => navigation("Estatísticas de tarefas")} >
-                <Text>Estatísticas de tarefas</Text>
+                <Text style={{color: 'white', fontSize: 16, margin: 6}}>Estatísticas de tarefas</Text>
             </Button>
-            <Button color={'blue'} title="Estatísticas de metas" onPress={() => navigation("Estatísticas de metas")}>
+            <Button style={{color: 'white', fontSize: 16, margin: 6}} color={'blue'} title="Estatísticas de metas" onPress={() => navigation("Estatísticas de metas")}>
                 <Text>Estatísticas de metas</Text>
             </Button>
 
