@@ -86,7 +86,7 @@ async function seed() {
     }
     console.log(categorias)
 
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 100; i++) {
         let start = randomDate()
         let end = randomDate(new Date(start))
         let data_concluida = randomDate(new Date(start), new Date(end))
@@ -105,7 +105,7 @@ async function seed() {
     }
     console.log(tarefas)
 
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 100; i++) {
         let data = randomDate()
         let data_concluida = randomDate(new Date(data))
         let meta = await createMeta({
@@ -122,7 +122,7 @@ async function seed() {
     }
     console.log(metas)
 
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 25; i++) {
         let lembrete = await createLembrete({
             descricao: 'Lembrete ' + i,
             data: randomDate(),
