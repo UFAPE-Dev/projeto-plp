@@ -1,3 +1,4 @@
 export function formatarPorcentagem(porcentagem) {
-    return `${Number(porcentagem).toFixed(2)*100}%`;
+    //return the percentage with 2 decimal places followed by a %
+    return (porcentagem * 100).toFixed(2) + "%"
 }
