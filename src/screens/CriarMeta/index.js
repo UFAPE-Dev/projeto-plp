@@ -30,7 +30,13 @@ function getMeta(meta) {
 export default function CriarMeta({route}) {
     const meta = route.params ? getMeta(route.params.meta) : null
     const meta_id = meta?.id
-    const [geralInfo, setGeralInfo] = useState({...{data: new Date(), id_categoria: 1}, ...meta});
+    const [geralInfo, setGeralInfo] = useState({
+        ...{
+            data: new Date(),
+            id_categoria: 1,
+            tipo: DIARIA,
+
+        }, ...meta});
     const [categoriaInfo, setCategoriaInfo] = useState({nome: "", cor: "#ff0000"});
     const [showPicker, setShowPicker] = useState(false)
     const [categorias, setCategorias] = useState([])
@@ -226,7 +232,7 @@ export default function CriarMeta({route}) {
                         </TouchableOpacity>
 
                     </View>
-                    <View style={{height: 2}}>
+                    <View style={{height: 5}}>
 
                     </View>
 

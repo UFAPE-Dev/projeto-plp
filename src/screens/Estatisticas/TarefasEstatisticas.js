@@ -274,6 +274,10 @@ export default function TarefasEstatisticas() {
                     })
                 }
 
+                <Text style={[styles.subTitulo, {marginTop: '1%'}]}>A categoria de atividades mais concluida foi:</Text>
+                <Text style={{fontWeight: 'bold', color: 'green'}}>{dados.categorias.reduce((prev, current) => (prev.quantidade > current.quantidade) ? prev : current, '').categoria}</Text>
+
+
             </ScrollView>
 
         </View>
