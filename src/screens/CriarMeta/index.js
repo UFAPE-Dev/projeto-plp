@@ -15,6 +15,10 @@ import {useNavigation} from "@react-navigation/native";
 import Modal from "../../components/Modal";
 import {ColorPicker, fromHsv} from 'react-native-color-picker'
 import Categoria from "../../model/models/Categoria";
+import  styles from './styles';
+import Feather from "react-native-vector-icons/Feather";
+import {widthPercentageToDP} from "../../util/normalizador";
+
 
 export default function CriarMeta() {
     const [geralInfo, setGeralInfo] = useState({data: new Date(), id_categoria: 1});
@@ -107,7 +111,7 @@ export default function CriarMeta() {
     }
 
     return (
-        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, padding: '3%', width: '100%', maxHeight: "65%"}}>
+        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, padding: '3%', width: '100%', maxHeight: "68%"}}>
             {showPicker && (
                 <DateTimePicker
                     testID="dateTimePicker"
@@ -117,12 +121,12 @@ export default function CriarMeta() {
                 />
             )}
             <Modal title={"Criar nova categoria"} visible={modalVisible} modalToggle={() => setModalVisible(!modalVisible)}>
-                <View style={{padding: "3%", flex: 1, flexDirection: 'row', alignItems: "center"}}>
+                <View style={{padding: "3%", flex: 1, flexDirection: 'row', alignItems: "center", width: '100%', maxHeight: "65%"}}>
                     <View style={{flex:1, alignItems: 'center'}}>
                         <Input
                             defaultValue={categoriaInfo.nome}
                             onChangeText ={handleGeralCategoriaInput("nome")}
-                            title={"nome"}
+                            title={"Nome"}
                         />
                     </View>
                     <View style={{flex: 1}}>
@@ -134,9 +138,9 @@ export default function CriarMeta() {
                         />
                     </View>
                 </View>
-                <Button color={"red"} onPress={salvarCategoria}>
-                    <Text style={{color: 'white'}}>Salvar</Text>
-                </Button>
+                    <Button color={"red"} onPress={salvarCategoria}>
+                        <Text style={{color: 'white'}}>Salvar</Text>
+                    </Button>
             </Modal>
             <Card
                 title={"Criar nova meta"}
@@ -156,21 +160,28 @@ export default function CriarMeta() {
                     />
 
                     <View style={{flex: 1, flexDirection: "row"}}>
-                        <View style={{flex: 1}}>
+                        <View style={{flex: 0.8}}>
                             <Text>Categoria</Text>
+                            <View style={{height: 1}}>
+
+                                </View>
                             <Picker
                                 selectedValue={geralInfo.id_categoria}
                                 onValueChange={handleGeralInput("id_categoria")}>
                                 {renderCategoriaList()}
                             </Picker>
                         </View>
-                        <Button onPress={() => setModalVisible(true)} color={"blue"}>
-                            <Text style={{color: "white"}}>Criar nova categoria</Text>
-                        </Button>
+                            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
+                                <Feather name={'plus'} size={widthPercentageToDP('6.5%')} color={'white'}/>
+                            </TouchableOpacity>
+
+                    </View>
+                    <View style={{height: 2}}>
+
                     </View>
 
                     <View style={{flex: 1, flexDirection: "row"}}>
-                        <View style={{flex: 1}}>
+                        <View style={{flex: 0.8}}>
                             <Text>Tipo</Text>
                             <Picker
                                 selectedValue={geralInfo.tipo}
@@ -192,9 +203,12 @@ export default function CriarMeta() {
                 </ScrollView>
             </Card>
             <View>
-                <Button color={'red'} onPress={criarMeta}>
-                    <Text style={{color: 'white'}}>Criar Meta</Text>
-                </Button>
+                <View style={{height: 12}}>
+                </View>
+                    <Button color={'red'} onPress={criarMeta}>
+                        <Text style={{color: 'white'}}>Criar Meta</Text>
+                    </Button>
+               
             </View>
         </View>
     );
