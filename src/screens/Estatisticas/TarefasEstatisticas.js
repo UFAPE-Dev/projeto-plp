@@ -1,12 +1,17 @@
 import React, {useState, useCallback} from 'react'
-import {ScrollView, StyleSheet, Text, View} from "react-native";
+import {ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {Grid, LineChart, XAxis, YAxis} from "react-native-svg-charts";
 import {formatarPorcentagem} from "../../util/formatarPorcentagem";
 import {MANHA, MEIAHORA, NOITE, TARDE, UMAHORA} from "../../model/enums/Bloco";
 import {useFocusEffect} from "@react-navigation/native";
 import * as tarefas from "../../util/tarefas";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 export default function TarefasEstatisticas() {
+    const [data, setData] = useState(new Date())
+    const [showPicker, setShowPicker] = useState(false)
+
     const [dados, setDados] = useState({
         ano: {
             concluidas: [],
@@ -31,59 +36,72 @@ export default function TarefasEstatisticas() {
         },
     })
 
+    async function onChange (event, selectedDate){
+        if (!selectedDate) {
+            setData(data)
+        } else {
+            setData(selectedDate)
+            await initData()
+        }
+        setShowPicker(false)
+
+    }
+
+    async function initData() {
+        let inicioAno = new Date(data.getFullYear(), 0, 1).toISOString()
+        let fimAno = new Date(data.getFullYear(), 11, 31).toISOString()
+        let tarefasConcluidasMeses = await tarefas.quantidadeTarefasConcluidasMes(inicioAno, fimAno)
+
+        //add missing months to the array tarefasConcluidasMeses
+        for (let i = 0; i < 12; i++) {
+            let encontrado = 0
+            for (let j = 0; j < tarefasConcluidasMeses.length; j++) {
+                if (tarefasConcluidasMeses[j]?.mes == i) {
+                    encontrado = 1
+                    break
+                }
+            }
+            if (!encontrado) {
+                tarefasConcluidasMeses.push({
+                    mes: i,
+                    quantidade: 0
+                })
+            }
+        }
+
+        tarefasConcluidasMeses.sort((a, b) => {
+            return a.mes - b.mes
+        })
+
+        const dadosTarefas = {
+            ano: {
+                concluidas: await tarefas.quantidadeTarefasConcluidasAno(inicioAno, fimAno),
+                totais: await tarefas.quantidadeTarefasAno(inicioAno, fimAno),
+            },
+            mes: {
+                concluidas: tarefasConcluidasMeses,
+                totais: await tarefas.quantidadeTarefasMes(inicioAno, fimAno),
+            },
+            semana: {
+                concluidas: await tarefas.quantidadeTarefasConcluidasSemanaMes(inicioAno, fimAno),
+                totais: await tarefas.quantidadeTarefasSemanaMes(inicioAno, fimAno),
+            },
+            horarios: {
+                hora: await tarefas.quantidadeTarefasConcluidasBlocos(inicioAno, fimAno, UMAHORA),
+                minutos: await tarefas.quantidadeTarefasConcluidasBlocos(inicioAno, fimAno, MEIAHORA),
+                manha: await tarefas.quantidadeTarefasConcluidasBlocos(inicioAno, fimAno, MANHA),
+                tarde: await tarefas.quantidadeTarefasConcluidasBlocos(inicioAno, fimAno, TARDE),
+                noite: await tarefas.quantidadeTarefasConcluidasBlocos(inicioAno, fimAno, NOITE),
+
+            },
+            categorias: await tarefas.quantidadeTarefasConcluidasCategoria(inicioAno, fimAno),
+        }
+
+        setDados(dadosTarefas)
+    }
+
     useFocusEffect(useCallback(() => {
         let isActive = true;
-
-        async function initData() {
-            let tarefasConcluidasMeses = await tarefas.quantidadeTarefasConcluidasMes(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString())
-
-            //add missing months to the array tarefasConcluidasMeses
-            for (let i = 0; i < 12; i++) {
-                let encontrado = 0
-                for (let j = 0; j < tarefasConcluidasMeses.length; j++) {
-                    if (tarefasConcluidasMeses[j]?.mes == i) {
-                        encontrado = 1
-                        break
-                    }
-                }
-                if (!encontrado) {
-                    tarefasConcluidasMeses.push({
-                        mes: i,
-                        quantidade: 0
-                    })
-                }
-            }
-
-            tarefasConcluidasMeses.sort((a, b) => {
-                return a.mes - b.mes
-            })
-
-            const dadosTarefas = {
-                ano: {
-                    concluidas: await tarefas.quantidadeTarefasConcluidasAno(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                    totais: await tarefas.quantidadeTarefasAno(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                },
-                mes: {
-                    concluidas: tarefasConcluidasMeses,
-                    totais: await tarefas.quantidadeTarefasMes(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                },
-                semana: {
-                    concluidas: await tarefas.quantidadeTarefasConcluidasSemanaMes(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                    totais: await tarefas.quantidadeTarefasSemanaMes(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                },
-                horarios: {
-                    hora: await tarefas.quantidadeTarefasConcluidasBlocos(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString(), UMAHORA),
-                    minutos: await tarefas.quantidadeTarefasConcluidasBlocos(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString(), MEIAHORA),
-                    manha: await tarefas.quantidadeTarefasConcluidasBlocos(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString(), MANHA),
-                    tarde: await tarefas.quantidadeTarefasConcluidasBlocos(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString(), TARDE),
-                    noite: await tarefas.quantidadeTarefasConcluidasBlocos(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString(), NOITE),
-
-                },
-                categorias: await tarefas.quantidadeTarefasConcluidasCategoria(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-            }
-
-            setDados(dadosTarefas)
-        }
 
         initData()
 
@@ -150,9 +168,23 @@ export default function TarefasEstatisticas() {
 
     return (
         <View style={{padding: '3%'}}>
+            {showPicker && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={data}
+                    mode={'date'}
+                    onChange={async (event, date) => await onChange(event, date)}
+                />
+            )}
             <ScrollView>
                 <Text style={styles.titulo}>Tarefas</Text>
                 <Text style={styles.subTitulo}>Total de tarefas</Text>
+                <View style={{alignItems: 'flex-end'}}>
+                    <TouchableOpacity style={{flexDirection: 'row', backgroundColor: 'blue', borderRadius: 30, padding: '1%', alignItems: 'center'}} onPress={() => setShowPicker(true)}>
+                        <MaterialCommunityIcons name="calendar" size={24} color="white"/>
+                        <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>{data.getFullYear()}</Text>
+                    </TouchableOpacity>
+                </View>
                 <View style={{height: 200, padding: 20, flexDirection: 'row'}}>
                     <YAxis
                         data={mesesTotais}
@@ -237,10 +269,14 @@ export default function TarefasEstatisticas() {
                 {
                     dados.categorias.map((item, index) => {
                         return (
-                            <Text key={item.quantidade + item.quantidade + index}>{item.categoria +  " - concluídas " + item.quantidade}</Text>
+                            <Text key={item.quantidade + item.bloco + index}>{item.categoria +  " - concluídas " + item.quantidade}</Text>
                         )
                     })
                 }
+
+                <Text style={[styles.subTitulo, {marginTop: '1%'}]}>A categoria de atividades mais concluida foi:</Text>
+                <Text style={{fontWeight: 'bold', color: 'green'}}>{dados.categorias.reduce((prev, current) => (prev.quantidade > current.quantidade) ? prev : current, '').categoria}</Text>
+
 
             </ScrollView>
 

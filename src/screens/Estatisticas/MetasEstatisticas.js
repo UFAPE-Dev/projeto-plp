@@ -1,12 +1,16 @@
 import React, {useState, useCallback} from 'react'
-import {ScrollView, StyleSheet, Text, View} from "react-native";
+import {ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {Grid, LineChart, XAxis, YAxis} from "react-native-svg-charts";
 import {formatarPorcentagem} from "../../util/formatarPorcentagem";
-import {MANHA, MEIAHORA, NOITE, TARDE, UMAHORA} from "../../model/enums/Bloco";
 import {useFocusEffect} from "@react-navigation/native";
 import * as metas from "../../util/metas";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 export default function MetasEstatisticas() {
+    const [data, setData] = useState(new Date())
+    const [showPicker, setShowPicker] = useState(false)
+
     const [dadosMeta, setDadosMeta] = useState({
         ano: {
             concluidas: [],
@@ -24,52 +28,65 @@ export default function MetasEstatisticas() {
         tipos: []
     })
 
+    async function onChange (event, selectedDate){
+        if (!selectedDate) {
+            setData(data)
+        } else {
+            setData(selectedDate)
+            await initData()
+        }
+        setShowPicker(false)
+
+    }
+
+    async function initData() {
+        let inicioAno = new Date(data.getFullYear(), 0, 1).toISOString()
+        let fimAno = new Date(data.getFullYear(), 11, 31).toISOString()
+        let metasConcluidasMeses = await metas.quantidadeMetasConcluidasMes(inicioAno, fimAno)
+
+        //add missing months to the array metasConcluidasMeses
+        for (let i = 0; i < 12; i++) {
+            let encontrado = 0
+            for (let j = 0; j < metasConcluidasMeses.length; j++) {
+                if (metasConcluidasMeses[j]?.mes == i) {
+                    encontrado = 1
+                    break
+                }
+            }
+            if (!encontrado) {
+                metasConcluidasMeses.push({
+                    mes: i,
+                    quantidade: 0
+                })
+            }
+        }
+
+        metasConcluidasMeses.sort((a, b) => {
+            return a.mes - b.mes
+        })
+
+        const dadosMetas = {
+            ano: {
+                concluidas: await metas.quantidadeMetasConcluidasAno(inicioAno, fimAno),
+                totais: await metas.quantidadeMetasAno(inicioAno, fimAno),
+            },
+            mes: {
+                concluidas: metasConcluidasMeses,
+                totais: await metas.quantidadeMetasMes(inicioAno, fimAno),
+            },
+            semana: {
+                concluidas: await metas.quantidadeMetasConcluidasSemanaMes(inicioAno, fimAno),
+                totais: await metas.quantidadeMetasSemanaMes(inicioAno, fimAno),
+            },
+            tipos : await metas.quantidadeMetasConcluidasTipo(inicioAno, fimAno),
+            categorias: await metas.quantidadeMetasConcluidasCategoria(inicioAno, fimAno)
+        }
+
+        setDadosMeta(dadosMetas)
+    }
+
     useFocusEffect(useCallback(() => {
         let isActive = true;
-
-        async function initData() {
-            let metasConcluidasMeses = await metas.quantidadeMetasConcluidasMes(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString())
-
-            //add missing months to the array metasConcluidasMeses
-            for (let i = 0; i < 12; i++) {
-                let encontrado = 0
-                for (let j = 0; j < metasConcluidasMeses.length; j++) {
-                    if (metasConcluidasMeses[j]?.mes == i) {
-                        encontrado = 1
-                        break
-                    }
-                }
-                if (!encontrado) {
-                    metasConcluidasMeses.push({
-                        mes: i,
-                        quantidade: 0
-                    })
-                }
-            }
-
-            metasConcluidasMeses.sort((a, b) => {
-                return a.mes - b.mes
-            })
-
-            const dadosMetas = {
-                ano: {
-                    concluidas: await metas.quantidadeMetasConcluidasAno(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                    totais: await metas.quantidadeMetasAno(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                },
-                mes: {
-                    concluidas: metasConcluidasMeses,
-                    totais: await metas.quantidadeMetasMes(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                },
-                semana: {
-                    concluidas: await metas.quantidadeMetasConcluidasSemanaMes(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                    totais: await metas.quantidadeMetasSemanaMes(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                },
-                tipos : await metas.quantidadeMetasConcluidasTipo(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString()),
-                categorias: await metas.quantidadeMetasConcluidasCategoria(new Date(2020, 0, 1).toISOString(), new Date(2024, 1, 1).toISOString())
-            }
-
-            setDadosMeta(dadosMetas)
-        }
 
         initData()
 
@@ -128,9 +145,23 @@ export default function MetasEstatisticas() {
 
     return(
         <View style={{padding: '3%'}}>
+            {showPicker && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={data}
+                    mode={'date'}
+                    onChange={async (event, date) => await onChange(event, date)}
+                />
+            )}
             <ScrollView>
                 <Text style={styles.titulo}>Metas</Text>
                 <Text style={styles.subTitulo}>Total de metas</Text>
+                <View style={{alignItems: 'flex-end'}}>
+                    <TouchableOpacity style={{flexDirection: 'row', backgroundColor: 'blue', borderRadius: 30, padding: '1%', alignItems: 'center'}} onPress={() => setShowPicker(true)}>
+                        <MaterialCommunityIcons name="calendar" size={24} color="white"/>
+                        <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>{data.getFullYear()}</Text>
+                    </TouchableOpacity>
+                </View>
                 <View style={{height: 200, padding: 20, flexDirection: 'row'}}>
                     <YAxis
                         key={'chart-1-y'}
@@ -212,6 +243,8 @@ export default function MetasEstatisticas() {
                         )
                     })
                 }
+                <Text style={[styles.subTitulo, {marginTop: '1%'}]}>O tipo de meta mais concluido foi:</Text>
+                <Text style={{fontWeight: 'bold', color: 'green'}}>{dadosMeta.tipos.reduce((prev, current) => (prev.quantidade > current.quantidade) ? prev : current, '').tipo}</Text>
 
                 <Text style={styles.subTitulo}>Metas concluídas por categoria</Text>
                 {
@@ -221,7 +254,9 @@ export default function MetasEstatisticas() {
                         )
                     })
                 }
+                <Text style={[styles.subTitulo, {marginTop: '1%'}]}>A categoria de metas mais concluido foi:</Text>
 
+                <Text style={{fontWeight: 'bold', color: 'green'}}>{dadosMeta.categorias.reduce((prev, current) => (prev.quantidade > current.quantidade) ? prev : current, '').categoria}</Text>
 
             </ScrollView>
         </View>
