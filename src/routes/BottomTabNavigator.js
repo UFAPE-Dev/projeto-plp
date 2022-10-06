@@ -5,6 +5,7 @@ import Tarefas from "../screens/Tarefas";
 import Estatisticas from "../screens/Estatisticas";
 import {View} from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome5'
+import Lembretes from "../screens/Lembretes";
 
 export default function BottomTabNavigator() {
     const {Navigator, Screen} = createBottomTabNavigator()
@@ -52,6 +53,19 @@ export default function BottomTabNavigator() {
                         return (
                             <View style={{alignItems: 'center'}}>
                                 <Icon name={'tasks'} size={20} color={color}/>
+                            </View>
+                        )
+                    },
+                }}
+            />
+            <Screen
+                name={'Lembretes'}
+                component={Lembretes}
+                options={{
+                    tabBarIcon: ({focused, color}) => {
+                        return (
+                            <View style={{alignItems: 'center'}}>
+                                <Icon name={'bell'} size={20} color={color}/>
                             </View>
                         )
                     },

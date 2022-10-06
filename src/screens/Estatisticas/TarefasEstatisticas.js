@@ -1,11 +1,10 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useCallback} from 'react'
 import {ScrollView, StyleSheet, Text, View} from "react-native";
 import {Grid, LineChart, XAxis, YAxis} from "react-native-svg-charts";
 import {formatarPorcentagem} from "../../util/formatarPorcentagem";
 import {MANHA, MEIAHORA, NOITE, TARDE, UMAHORA} from "../../model/enums/Bloco";
 import {useFocusEffect} from "@react-navigation/native";
 import * as tarefas from "../../util/tarefas";
-import * as metas from "../../util/metas";
 
 export default function TarefasEstatisticas() {
     const [dados, setDados] = useState({
