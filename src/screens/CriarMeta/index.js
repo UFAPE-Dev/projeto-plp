@@ -15,6 +15,10 @@ import {useNavigation} from "@react-navigation/native";
 import Modal from "../../components/Modal";
 import {ColorPicker, fromHsv} from 'react-native-color-picker'
 import Categoria from "../../model/models/Categoria";
+import  styles from './styles';
+import Feather from "react-native-vector-icons/Feather";
+import {widthPercentageToDP} from "../../util/normalizador";
+
 
 export default function CriarMeta() {
     const [geralInfo, setGeralInfo] = useState({data: new Date(), id_categoria: 1});
@@ -156,23 +160,28 @@ export default function CriarMeta() {
                     />
 
                     <View style={{flex: 1, flexDirection: "row"}}>
-                        <View style={{flex: 1}}>
+                        <View style={{flex: 0.8}}>
                             <Text>Categoria</Text>
+                            <View style={{height: 1}}>
+
+                                </View>
                             <Picker
                                 selectedValue={geralInfo.id_categoria}
                                 onValueChange={handleGeralInput("id_categoria")}>
                                 {renderCategoriaList()}
                             </Picker>
                         </View>
-                        <View style={{height: 100, width: 50, flex: 0.6}}>
-                            <Button onPress={() => setModalVisible(true)} color={"#4169E1"}>
-                                <Text style={{color: "white"}}>Nova categoria</Text>
-                            </Button>
-                        </View> 
+                            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
+                                <Feather name={'plus'} size={widthPercentageToDP('6.5%')} color={'white'}/>
+                            </TouchableOpacity>
+
+                    </View>
+                    <View style={{height: 2}}>
+
                     </View>
 
                     <View style={{flex: 1, flexDirection: "row"}}>
-                        <View style={{flex: 1}}>
+                        <View style={{flex: 0.8}}>
                             <Text>Tipo</Text>
                             <Picker
                                 selectedValue={geralInfo.tipo}
