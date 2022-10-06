@@ -243,6 +243,8 @@ export default function MetasEstatisticas() {
                         )
                     })
                 }
+                <Text style={[styles.subTitulo, {marginTop: '1%'}]}>O tipo de meta mais concluido foi:</Text>
+                <Text style={{fontWeight: 'bold', color: 'green'}}>{dadosMeta.tipos.reduce((prev, current) => (prev.quantidade > current.quantidade) ? prev : current, '').tipo}</Text>
 
                 <Text style={styles.subTitulo}>Metas concluídas por categoria</Text>
                 {
@@ -252,7 +254,9 @@ export default function MetasEstatisticas() {
                         )
                     })
                 }
+                <Text style={[styles.subTitulo, {marginTop: '1%'}]}>A categoria de metas mais concluido foi:</Text>
 
+                <Text style={{fontWeight: 'bold', color: 'green'}}>{dadosMeta.categorias.reduce((prev, current) => (prev.quantidade > current.quantidade) ? prev : current, '').categoria}</Text>
 
             </ScrollView>
         </View>
