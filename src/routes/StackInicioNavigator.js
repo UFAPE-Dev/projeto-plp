@@ -3,6 +3,8 @@ import React from "react";
 import BottomTabNavigator from './BottomTabNavigator'
 import CriarMeta from "../screens/CriarMeta";
 import CriarTarefa from "../screens/CriarTarefa";
+import TarefasEstatisticas from "../screens/Estatisticas/TarefasEstatisticas";
+import MetasEstatisticas from "../screens/Estatisticas/MetasEstatisticas";
 
 export default function StackInicioNavigator() {
     const {Navigator, Screen} = createStackNavigator();
@@ -33,6 +35,14 @@ export default function StackInicioNavigator() {
             <Screen
                 name={'Nova Tarefa'}
                 component={CriarTarefa}
+            />
+            <Screen
+                name={'Estatísticas de tarefas'}
+                component={TarefasEstatisticas}
+            />
+            <Screen
+                name={'Estatísticas de metas'}
+                component={MetasEstatisticas}
             />
         </Navigator>
     );
