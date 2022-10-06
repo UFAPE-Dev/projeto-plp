@@ -107,7 +107,7 @@ export default function CriarMeta() {
     }
 
     return (
-        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, padding: '3%', width: '100%', maxHeight: "65%"}}>
+        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, padding: '3%', width: '100%', maxHeight: "68%"}}>
             {showPicker && (
                 <DateTimePicker
                     testID="dateTimePicker"
@@ -122,7 +122,7 @@ export default function CriarMeta() {
                         <Input
                             defaultValue={categoriaInfo.nome}
                             onChangeText ={handleGeralCategoriaInput("nome")}
-                            title={"nome"}
+                            title={"Nome"}
                         />
                     </View>
                     <View style={{flex: 1}}>
@@ -164,9 +164,11 @@ export default function CriarMeta() {
                                 {renderCategoriaList()}
                             </Picker>
                         </View>
-                        <Button onPress={() => setModalVisible(true)} color={"blue"}>
-                            <Text style={{color: "white"}}>Criar nova categoria</Text>
-                        </Button>
+                        <View style={{height: 100, width: 50, flex: 0.6}}>
+                            <Button onPress={() => setModalVisible(true)} color={"#4169E1"}>
+                                <Text style={{color: "white"}}>Nova categoria</Text>
+                            </Button>
+                        </View> 
                     </View>
 
                     <View style={{flex: 1, flexDirection: "row"}}>
@@ -192,9 +194,12 @@ export default function CriarMeta() {
                 </ScrollView>
             </Card>
             <View>
-                <Button color={'red'} onPress={criarMeta}>
-                    <Text style={{color: 'white'}}>Criar Meta</Text>
-                </Button>
+                <View style={{height: 12}}>
+                </View>
+                    <Button color={'red'} onPress={criarMeta}>
+                        <Text style={{color: 'white'}}>Criar Meta</Text>
+                    </Button>
+               
             </View>
         </View>
     );
