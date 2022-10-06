@@ -15,7 +15,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import Ionicons from "react-native-vector-icons/Ionicons";
 import exibirToast from "../../util/toastAndroid";
 import {allMetas} from "../../services/MetaService";
-import {ANUAL, MENSAL, SEMANAL} from "../../model/enums/Tipo";
+import {ANUAL, DIARIA, MENSAL, SEMANAL} from "../../model/enums/Tipo";
 
 export default function Tarefas() {
     const navigate = useNavigation().navigate;
@@ -94,6 +94,11 @@ export default function Tarefas() {
         return meta.tipo === SEMANAL
     })
 
+    //filter metas for this week
+    const metasDiario = metas.filter(meta => {
+        return meta.tipo === DIARIA
+    })
+
     //filter metas for this month
     const metasMes = metas.filter(meta => {
         return meta.tipo === MENSAL
@@ -113,6 +118,14 @@ export default function Tarefas() {
         'Novembro',
         'Dezembro'
     ]
+
+    function getWeek(data = new Date()) {
+        const d = data ;
+        const date = d.getDate();
+        const day = d.getDay();
+        const weekOfMonth = Math.ceil((date - 1 - day) / 7);
+        return weekOfMonth;
+    }
 
     function getStatus(meta) {
         switch (meta.status) {
@@ -156,7 +169,9 @@ export default function Tarefas() {
                         case MENSAL:
                             return 'Concluir até o mês ' + mapMeses[data.getMonth()] + ' de ' + data.getFullYear()
                         case SEMANAL:
-                            return 'Concluir até a semana do dia ' + formatDate(data)
+                            return 'Concluir até a semana ' + getWeek(data) +  ' de ' +formatDate(data)
+                        case DIARIA:
+                            return 'Concluir até o dia ' + formatDate(data)
                     }
                 }
                 let data = meta.data
@@ -172,6 +187,9 @@ export default function Tarefas() {
                         atrasada = data.getMonth() < new Date().getMonth() && data.getFullYear() <= new Date().getFullYear()
                         break;
                     case SEMANAL:
+                        atrasada = data < new Date()
+                        break;
+                    case DIARIA:
                         atrasada = data < new Date()
                         break;
                 }
@@ -320,6 +338,36 @@ export default function Tarefas() {
                                     return 0;
                                 })
                                 : metasAnuais}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id}
+                        />
+                    </View>
+                    <View style={{
+                        padding: '3%',
+                        margin: '2%',
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 30,
+                        height: '100%'
+                    }}>
+                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Metais diárias</Text>
+                            <TouchableOpacity onPress={() => setOrdenar(!ordenar)}>
+                                <Feather name={'filter'} size={widthPercentageToDP('5%')} color={'#000'}/>
+                            </TouchableOpacity>
+                        </View>
+
+                        <FlatList
+                            data={ordenar ?
+                                [...metasDiario].sort((a, b) => {
+                                    if (a.categoria.nome < b.categoria.nome) {
+                                        return -1;
+                                    }
+                                    if (a.categoria.nome > b.categoria.nome) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                })
+                                : metasDiario}
                             renderItem={renderItem}
                             keyExtractor={item => item.id}
                         />

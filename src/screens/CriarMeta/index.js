@@ -4,7 +4,7 @@ import Card from "../../components/Card";
 import Input from "../../components/Input";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {Picker} from '@react-native-picker/picker';
-import {ANUAL, MENSAL, SEMANAL} from "../../model/enums/Tipo";
+import {ANUAL, DIARIA, MENSAL, SEMANAL} from "../../model/enums/Tipo";
 import {allCategorias, createCategoria} from "../../services/CategoriaService";
 import {formatDate} from "../../util/dateFormat";
 import Meta from "../../model/models/Meta";
@@ -87,7 +87,7 @@ export default function CriarMeta({route}) {
     }
 
     const renderTiposList = () => {
-        let a = [SEMANAL, MENSAL, ANUAL]
+        let a = [DIARIA, SEMANAL, MENSAL, ANUAL]
         return a.map((item) => {
             return <Picker.Item key={item} label={item} value={item}/>
         })
