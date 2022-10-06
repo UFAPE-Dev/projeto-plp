@@ -66,22 +66,22 @@ export default function Estatisticas() {
                         margin: '2%',
                         backgroundColor: '#EFEFEF',
                         borderRadius: 30,
-                        height: '50%',
+                        height: '40%',
                     }}>
-                        <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
-                            <Text style={{fontWeight: 'bold', fontSize: 17}}>Relatório</Text>
+                        <View style={{justifyContent: 'center', flexDirection: 'row'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 20}}>Relatório</Text>
                         </View>
 
                         <View style={{padding: '0%', margin: '5%'}}>
 
                         <Button color={'#cd0c36'} onPress={() => navigation("Estatísticas de tarefas")} >
-                            <Text style={{color: 'white'}}>Estatísticas de tarefas</Text>
+                            <Text style={{color: 'white', fontSize: 17}}>Estatísticas de tarefas</Text>
                         </Button>
                         </View>
 
                         <View style={{padding: '0%', margin: '5%'}}>
                         <Button color={'blue'} title="Estatísticas de metas" onPress={() => navigation("Estatísticas de metas")}>
-                            <Text style={{color: 'white'}}>Estatísticas de metas</Text>
+                            <Text style={{color: 'white' , fontSize: 17}}>Estatísticas de metas</Text>
                         </Button>
                         </View>
 
