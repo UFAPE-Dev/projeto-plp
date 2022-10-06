@@ -1,6 +1,8 @@
 import db from "../model/database/SQLiteDatabase";
 import Meta from "../model/models/Meta";
 import {findCategoria} from "./CategoriaService";
+import {findTarefa} from "./TarefaService";
+import {CONCLUIDA} from "../model/enums/Status";
 
 async function allMetas (){
     const result = await new Promise((resolve, reject) => {
@@ -98,10 +100,46 @@ async function updateMeta({id, id_categoria, titulo, descricao, data, tipo, stat
     })
 }
 
+async function concluirMetaParcialmente({id, status}) {
+    return new Promise((resolve, reject) => {
+        db.transaction((tx) => {
+            tx.executeSql(
+                "UPDATE meta SET status=? WHERE id=?;",
+                [status, id],
+                //-----------------------
+                async (_, {rowsAffected}) => {
+                    if (rowsAffected > 0) resolve(await findMeta(id));
+                    else reject("Error updating obj: id=" + id);
+                },
+                (_, error) => reject(error)
+            )
+        })
+    })
+}
+
+async function concluirMeta({id, concluida_em}) {
+    return new Promise((resolve, reject) => {
+        db.transaction((tx) => {
+            tx.executeSql(
+                "UPDATE meta SET status=?, concluida_em=? WHERE id=?;",
+                [CONCLUIDA, concluida_em, id],
+                //-----------------------
+                async (_, {rowsAffected}) => {
+                    if (rowsAffected > 0) resolve(await findMeta(id));
+                    else reject("Error updating obj: id=" + id);
+                },
+                (_, error) => reject(error)
+            )
+        })
+    })
+}
+
 export {
     allMetas,
     createMeta,
     findMeta,
     deleteMeta,
-    updateMeta
+    updateMeta,
+    concluirMetaParcialmente,
+    concluirMeta
 }
