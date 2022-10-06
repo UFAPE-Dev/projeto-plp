@@ -176,7 +176,7 @@ export default function CriarMeta() {
                             </TouchableOpacity>
 
                     </View>
-                    <View style={{height: 2}}>
+                    <View style={{height: 5}}>
 
                     </View>
 

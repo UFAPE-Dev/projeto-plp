@@ -22,6 +22,10 @@ import {
     updateTarefa
 } from "../../services/TarefaService";
 import {CONCLUIDA, PARCIAL} from "../../model/enums/Status";
+import  styles from './styles';
+import Feather from "react-native-vector-icons/Feather";
+import {widthPercentageToDP} from "../../util/normalizador";
+
 
 function getTarefa(tarefa){
     let data_inicio = tarefa.data_fim ? new Date(tarefa.data_inicio) : null;
@@ -300,24 +304,29 @@ export default function CriarTarefa({route}) {
                     />
 
                     <View style={{flex: 1, flexDirection: "row"}}>
-                        <View style={{flex: 1}}>
+                        <View style={{flex: 0.8}}>
                             <Text>Categoria</Text>
+                            <View style={{height: 1}}>
+
+                                </View>
                             <Picker
                                 selectedValue={geralInfo.id_categoria}
                                 onValueChange={handleGeralInput("id_categoria")}>
                                 {renderCategoriaList()}
                             </Picker>
                         </View>
-                            <View style={{flex:0.6}}>
-                            <Button onPress={() => setModalVisible(true)} color={"#4169E1"}>
-                                <Text style={{color: "white"}}>Criar nova categoria</Text>
-                            </Button>
-                        </View>
+                        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
+                                <Feather name={'plus'} size={widthPercentageToDP('6.5%')} color={'white'}/>
+                            </TouchableOpacity>
+
                         
                     </View>
+                    <View style={{height: 5}}>
+
+                        </View>
 
                     <View style={{flex: 1, flexDirection: "row"}}>
-                        <View style={{flex: 1}}>
+                        <View style={{flex: 0.8}}>
                             <Text>Bloco</Text>
                             <Picker
                                 selectedValue={geralInfo.bloco}

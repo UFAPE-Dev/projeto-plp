@@ -10,7 +10,7 @@ export default StyleSheet.create({
         bottom: 0,
         borderRadius: 100,
         padding: '2%',
-        backgroundColor: 'blue',
+        backgroundColor: '#4169E1',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 5,
